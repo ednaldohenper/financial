@@ -746,15 +746,16 @@ let posicao = null;
 let posTimer = null;
 
 function abrirPosicao() {
-  const dir    = document.getElementById('wdo-dir').value;
-  const qty    = parseFloat(document.getElementById('wdo-qty').value)   || 1;
-  const entry  = parseFloat(document.getElementById('wdo-entry').value);
+  const dir   = document.getElementById('wdo-dir').value;
+  const qty   = parseFloat(document.getElementById('wdo-qty').value)   || 1;
+  const entry = parseFloat(document.getElementById('wdo-entry').value);
   if (!entry) { alert('Defina o preço de entrada antes de abrir a posição.'); return; }
 
-  const plano  = lastSignal && lastSignal.plano ? lastSignal.plano : {};
+  const plano    = lastSignal && lastSignal.plano ? lastSignal.plano : {};
   const stopPts  = plano.stop_pts  || parseFloat(document.getElementById('risk-stop').value) || 20;
   const alvo1Pts = plano.alvo1_pts || stopPts * 1.5;
   const alvo2Pts = plano.alvo2_pts || stopPts * 2.5;
+  const now      = new Date();
 
   posicao = {
     dir, qty, entry,
@@ -762,8 +763,21 @@ function abrirPosicao() {
     alvo1: dir === 'C' ? entry + alvo1Pts : entry - alvo1Pts,
     alvo2: dir === 'C' ? entry + alvo2Pts : entry - alvo2Pts,
     stopPts, alvo1Pts, alvo2Pts,
-    inicio: new Date(),
+    inicio: now,
+    tradeIdx: journal.trades.length,  // índice no journal
   };
+
+  // Registra imediatamente no journal como aberto
+  journal.trades.push({
+    date:   now.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}),
+    time:   now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+    dir, qty, entry,
+    exit:   null, pts: null, pnl: null,
+    status: 'aberto',
+  });
+  journal.pnl += 0;
+  saveJournal();
+  renderLog();
 
   document.getElementById('posicao-card').style.display = 'block';
   document.getElementById('pos-entrada').textContent    = fmt(entry, 1) + ' pts';
@@ -808,21 +822,33 @@ function atualizarPosicao() {
   // tempo em posição
   const mins = Math.floor((new Date() - posicao.inicio) / 60000);
   document.getElementById('pos-tempo').textContent = mins + ' min em posição';
+
+  // Atualiza linha do journal em tempo real
+  renderLog();
 }
 
 function fecharPosicao(tipo) {
   if (!posicao) return;
   let exitPrice;
-  if (tipo === 'stop')  exitPrice = posicao.stop;
+  if (tipo === 'stop')       exitPrice = posicao.stop;
   else if (tipo === 'alvo1') exitPrice = posicao.alvo1;
-  else exitPrice = tickerState.price || posicao.entry;
+  else                       exitPrice = tickerState.price || posicao.entry;
 
-  document.getElementById('wdo-dir').value   = posicao.dir;
-  document.getElementById('wdo-qty').value   = posicao.qty;
-  document.getElementById('wdo-entry').value = posicao.entry;
-  document.getElementById('wdo-exit').value  = exitPrice;
-  calcSim();
-  addTrade();
+  const pts = posicao.dir === 'C' ? exitPrice - posicao.entry : posicao.entry - exitPrice;
+  const pnl = pts * 10 * posicao.qty;
+
+  // Atualiza o trade aberto no journal com saída e resultado final
+  const t = journal.trades[posicao.tradeIdx];
+  if (t) {
+    t.exit   = exitPrice;
+    t.pts    = pts;
+    t.pnl    = pnl;
+    t.status = 'fechado';
+  }
+  journal.pnl += pnl;
+  saveJournal();
+  renderLog();
+  renderTradesChart();
 
   posicao = null;
   if (posTimer) { clearInterval(posTimer); posTimer = null; }
@@ -912,15 +938,25 @@ function renderLog() {
     log.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);">Nenhum trade registrado.</div>';
     return;
   }
-  log.innerHTML = journal.trades.slice().reverse().map(t => `
-    <div class="trade-row">
+  log.innerHTML = journal.trades.slice().reverse().map(t => {
+    const aberto  = t.status === 'aberto';
+    const current = aberto && tickerState.price ? tickerState.price : null;
+    const livePts = current ? (t.dir==='C' ? current - t.entry : t.entry - current) : null;
+    const livePnl = livePts !== null ? livePts * 10 * t.qty : null;
+    const pts     = aberto ? livePts  : t.pts;
+    const pnl     = aberto ? livePnl  : t.pnl;
+    const exitTxt = aberto ? `<span style="color:var(--blue);font-size:11px;animation:pulse 1s infinite;">● ABERTO</span>` : fmt(t.exit,1);
+    return `
+    <div class="trade-row" id="trow-${t.time.replace(':','')}">
       <span>${t.time}</span>
       <span><span class="tag ${t.dir}">${t.dir==='C'?'COMPRA':'VENDA'}</span></span>
-      <span>${fmt(t.entry,1)}</span><span>${fmt(t.exit,1)}</span>
-      <span class="${t.pts>=0?'up':'down'}">${t.pts>=0?'+':''}${fmt(t.pts,1)}</span>
-      <span class="${t.pnl>=0?'up':'down'}" style="font-weight:700;">${fmtBRL(t.pnl)}</span>
+      <span>${fmt(t.entry,1)}</span>
+      <span>${exitTxt}</span>
+      <span class="${pts>=0?'up':'down'}">${pts!==null?(pts>=0?'+':'')+fmt(pts,1):'—'}</span>
+      <span class="${pnl>=0?'up':'down'}" style="font-weight:700;">${pnl!==null?fmtBRL(pnl):'—'}</span>
       <span style="color:var(--muted);">${t.qty}x</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   const dp = document.getElementById('daily-pnl');
   dp.textContent  = fmtBRL(journal.pnl);
   dp.className    = journal.pnl > 0 ? 'up' : journal.pnl < 0 ? 'down' : 'neutral';
@@ -938,7 +974,7 @@ function clearLog() {
 let tradesChart = null;
 
 function renderTradesChart() {
-  const trades  = journal.trades;
+  const trades  = journal.trades.filter(t => t.status === 'fechado');
   const empty   = document.getElementById('ops-empty');
   const wrap    = document.getElementById('ops-chart-wrap');
 
