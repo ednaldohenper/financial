@@ -38,4 +38,5 @@ jobs:
           git config user.email "bot@github-actions"
           git add signal.json backtest.json
           git diff --staged --quiet || git commit -m "sinal+backtest: $(TZ='America/Sao_Paulo' date +'%Y-%m-%d %H:%M') BRT"
+          git pull --rebase origin main
           git push
