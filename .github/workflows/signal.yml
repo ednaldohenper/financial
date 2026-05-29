@@ -1,0 +1,39 @@
+name: Gerar Sinal WDO
+
+on:
+  schedule:
+    # 11:55 UTC = 08:55 BRT (UTC-3) — dias úteis
+    - cron: '55 11 * * 1-5'
+  workflow_dispatch:
+    # Permite rodar manualmente pelo GitHub com 1 clique
+
+jobs:
+  gerar-sinal:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Gerar sinal via Claude
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python signal_wdo.py
+
+      - name: Salvar signal.json no repositório
+        run: |
+          git config user.name  "WDO Signal Bot"
+          git config user.email "bot@github-actions"
+          git add signal.json
+          git diff --staged --quiet || git commit -m "sinal: $(TZ='America/Sao_Paulo' date +'%Y-%m-%d %H:%M') BRT"
+          git push

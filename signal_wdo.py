@@ -1,0 +1,166 @@
+"""
+WDO Signal Generator
+Busca dados pré-mercado, analisa via Claude e salva signal.json
+"""
+import json
+import os
+import sys
+from datetime import datetime
+import yfinance as yf
+from anthropic import Anthropic
+
+client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
+MONTH_CODES = list("FGHJKMNQUVXZ")
+
+SYMBOLS = {
+    "DXY":      ("DX-Y.NYB",  "DXY — Índice do Dólar"),
+    "EURUSD":   ("EURUSD=X",  "EUR/USD"),
+    "SP500F":   ("ES=F",      "S&P 500 Futures"),
+    "NASDAQF":  ("NQ=F",      "Nasdaq Futures"),
+    "OURO":     ("GC=F",      "Ouro (XAU/USD)"),
+    "PETROLEO": ("CL=F",      "Petróleo WTI"),
+    "NIKKEI":   ("^N225",     "Nikkei 225"),
+    "DAX":      ("^GDAXI",    "DAX — Alemanha"),
+    "USDBRL":   ("USDBRL=X",  "USD/BRL spot"),
+}
+
+
+def auto_contract():
+    now = datetime.now()
+    m = now.month - 1
+    y = now.year % 100
+    if now.day > 10:
+        m = (m + 1) % 12
+        if m == 0:
+            y += 1
+    return f"WDO{MONTH_CODES[m]}{y:02d}"
+
+
+def fetch_market_data():
+    data = {}
+    for key, (symbol, label) in SYMBOLS.items():
+        try:
+            hist = yf.Ticker(symbol).history(period="3d", interval="1d")
+            if len(hist) >= 2:
+                prev  = float(hist["Close"].iloc[-2])
+                curr  = float(hist["Close"].iloc[-1])
+                chg   = round(((curr - prev) / prev) * 100, 2)
+                data[key] = {"label": label, "price": round(curr, 4), "change_pct": chg}
+            elif len(hist) == 1:
+                curr = float(hist["Close"].iloc[-1])
+                data[key] = {"label": label, "price": round(curr, 4), "change_pct": 0.0}
+            else:
+                data[key] = {"label": label, "price": None, "change_pct": None}
+        except Exception as e:
+            data[key] = {"label": label, "price": None, "change_pct": None, "erro": str(e)}
+    return data
+
+
+def fetch_usdbrl_history():
+    try:
+        hist = yf.Ticker("USDBRL=X").history(period="30d", interval="1d")
+        return [round(float(v), 4) for v in hist["Close"].tolist()[-20:]]
+    except:
+        return []
+
+
+def build_prompt(market_data, history, contract):
+    lines = [
+        f"Data/Hora análise: {datetime.now().strftime('%d/%m/%Y %H:%M')} BRT",
+        f"Contrato alvo: {contract}",
+        "",
+        "DADOS PRÉ-MERCADO (antes da abertura da B3 às 9h BRT):",
+        "",
+    ]
+    for key, d in market_data.items():
+        if d["price"]:
+            sinal = "+" if d["change_pct"] >= 0 else ""
+            lines.append(f"• {d['label']}: {d['price']}  ({sinal}{d['change_pct']}%)")
+        else:
+            lines.append(f"• {d['label']}: indisponível")
+
+    if history:
+        lines += ["", f"USD/BRL — fechamentos dos últimos {len(history)} dias: {history}"]
+
+    lines += [
+        "",
+        "CORRELAÇÕES HISTÓRICAS CONHECIDAS DO WDO:",
+        "• DXY subindo  →  WDO tende a subir   (correlação positiva ~0.85)",
+        "• EUR/USD subindo  →  WDO tende a cair (correlação negativa)",
+        "• S&P Futures caindo + DXY subindo  →  tendência de alta no WDO",
+        "• Risk-off global (ouro sobe + bolsas caem)  →  dólar forte  →  WDO pode subir",
+        "• Petróleo subindo (BRL se fortalece por pauta exportadora)  →  WDO pode cair",
+        "",
+        "Com base nesses dados, gere sua análise. Responda SOMENTE com o JSON abaixo, sem texto adicional:",
+        "",
+        """{
+  "bias": "ALTA" | "BAIXA" | "NEUTRO",
+  "confianca": 0-100,
+  "resumo": "2-3 frases explicando o sinal de forma direta",
+  "fator_principal": "o driver mais relevante do sinal hoje",
+  "fatores_favor": ["fator 1", "fator 2"],
+  "fatores_contra": ["fator 1", "fator 2"],
+  "zonas_sugeridas": {
+    "resistencia2": número,
+    "resistencia1": número,
+    "suporte1": número,
+    "suporte2": número
+  },
+  "validade": "abertura" | "manha" | "dia_todo",
+  "alerta": "aviso se dados conflitantes ou incerteza alta, senão null"
+}""",
+    ]
+    return "\n".join(lines)
+
+
+def generate_signal():
+    contract = auto_contract()
+    log = lambda msg: print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
+
+    log(f"Contrato detectado: {contract}")
+    log("Buscando dados pré-mercado...")
+    market_data = fetch_market_data()
+
+    log("Buscando histórico USD/BRL...")
+    history = fetch_usdbrl_history()
+
+    log("Chamando Claude para análise...")
+    prompt = build_prompt(market_data, history, contract)
+
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=700,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    raw = response.content[0].text.strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+    raw = raw.strip()
+
+    try:
+        signal = json.loads(raw)
+    except json.JSONDecodeError as e:
+        log(f"ERRO ao parsear JSON: {e}")
+        log(f"Resposta recebida:\n{raw}")
+        sys.exit(1)
+
+    signal["contrato"]      = contract
+    signal["gerado_em"]     = datetime.now().isoformat()
+    signal["market_data"]   = market_data
+    signal["tokens_usados"] = response.usage.input_tokens + response.usage.output_tokens
+
+    with open("signal.json", "w", encoding="utf-8") as f:
+        json.dump(signal, f, ensure_ascii=False, indent=2)
+
+    log(f"SINAL: {signal['bias']} — confiança {signal['confianca']}%")
+    log(f"Fator principal: {signal['fator_principal']}")
+    log(f"Tokens usados: {signal['tokens_usados']}")
+    log("signal.json salvo com sucesso.")
+
+
+if __name__ == "__main__":
+    generate_signal()

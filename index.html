@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WDO — Sinal & Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #21262d;
+    --border: #30363d; --green: #3fb950; --red: #f85149;
+    --yellow: #e3b341; --blue: #58a6ff; --purple: #bc8cff;
+    --text: #e6edf3; --muted: #8b949e;
+    --font: 'SF Mono', 'Fira Code', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 13px; min-height: 100vh; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px; border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  header h1 { font-size: 15px; font-weight: 600; letter-spacing: .5px; color: var(--blue); }
+  #clock { color: var(--muted); font-size: 12px; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .main { padding: 16px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .card-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); margin-bottom: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  /* ── SINAL IA ─────────────────────────────────────────────────── */
+  .signal-card { border-radius: 12px; padding: 24px; position: relative; overflow: hidden; }
+  .signal-card.ALTA  { background: #0d2818; border: 1px solid #3fb95055; }
+  .signal-card.BAIXA { background: #2a0d0d; border: 1px solid #f8514955; }
+  .signal-card.NEUTRO { background: var(--surface); border: 1px solid var(--border); }
+
+  .signal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  .signal-badge {
+    font-size: 32px; font-weight: 800; letter-spacing: -1px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .signal-badge.ALTA  { color: var(--green); }
+  .signal-badge.BAIXA { color: var(--red); }
+  .signal-badge.NEUTRO { color: var(--muted); }
+
+  .signal-arrow { font-size: 42px; line-height: 1; }
+
+  .confidence-wrap { text-align: right; }
+  .confidence-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .confidence-value { font-size: 36px; font-weight: 700; }
+  .confidence-value.high   { color: var(--green); }
+  .confidence-value.medium { color: var(--yellow); }
+  .confidence-value.low    { color: var(--muted); }
+
+  .signal-resumo { font-size: 13px; color: var(--text); margin: 14px 0; line-height: 1.6; }
+  .signal-driver { font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+  .signal-driver span { color: var(--yellow); }
+
+  .signal-factors { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .factor-box { background: var(--surface2); border-radius: 8px; padding: 10px; border: 1px solid var(--border); }
+  .factor-box-title { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+  .factor-box-title.favor  { color: var(--green); }
+  .factor-box-title.contra { color: var(--red); }
+  .factor-item { font-size: 11px; color: var(--muted); padding: 2px 0; }
+  .factor-item::before { content: '• '; }
+
+  .signal-meta {
+    display: flex; align-items: center; gap: 16px; margin-top: 14px;
+    padding-top: 14px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--muted);
+  }
+  .validade-badge { padding: 2px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+  .validade-badge.abertura { background: #e3b34122; color: var(--yellow); }
+  .validade-badge.manha    { background: #58a6ff22; color: var(--blue); }
+  .validade-badge.dia_todo { background: #3fb95022; color: var(--green); }
+
+  .alerta-box {
+    margin-top: 10px; padding: 10px 14px; border-radius: 8px;
+    background: #e3b34115; border: 1px solid #e3b34155;
+    font-size: 12px; color: var(--yellow);
+  }
+
+  /* ── PRÉ-MERCADO ─────────────────────────────────────────────── */
+  .market-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .market-item {
+    background: var(--surface2); border-radius: 8px; padding: 10px 12px;
+    border: 1px solid var(--border);
+  }
+  .market-item-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .market-item-price { font-size: 14px; font-weight: 700; }
+  .market-item-chg   { font-size: 11px; font-weight: 600; }
+
+  /* ── TICKER AO VIVO ──────────────────────────────────────────── */
+  .ticker-row { display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+  .ticker-price { font-size: 52px; font-weight: 700; letter-spacing: -2px; }
+  .ticker-change { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+  .ticker-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .meta-item label { display: block; font-size: 10px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .5px; }
+  .meta-item span  { font-size: 13px; font-weight: 600; }
+
+  .latency-bar {
+    display: flex; align-items: center; gap: 8px; padding: 5px 10px;
+    border-radius: 6px; margin: 10px 0; background: var(--surface2);
+    border: 1px solid var(--border); font-size: 11px;
+  }
+  .latency-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .latency-dot.fresh { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .latency-dot.warn  { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+  .latency-dot.stale { background: var(--red); animation: pulse 1s infinite; }
+  .latency-age.fresh { color: var(--green); }
+  .latency-age.warn  { color: var(--yellow); }
+  .latency-age.stale { color: var(--red); }
+  .latency-age { margin-left: auto; font-weight: 700; }
+
+  /* ── API CONFIG ──────────────────────────────────────────────── */
+  .api-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+  .api-row .field { flex: 1; min-width: 140px; }
+  .api-status { font-size: 11px; margin-top: 8px; padding: 6px 10px; border-radius: 6px; background: var(--surface2); border: 1px solid var(--border); }
+  .api-status.ok   { color: var(--green); border-color: #3fb95044; }
+  .api-status.err  { color: var(--red);   border-color: #f8514944; }
+  .api-status.idle { color: var(--muted); }
+
+  /* ── FORM ────────────────────────────────────────────────────── */
+  .field label { display: block; font-size: 10px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+  .field input, .field select {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 8px 10px; border-radius: 6px; font-family: var(--font); font-size: 13px;
+  }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--blue); }
+  .btn { padding: 8px 16px; border-radius: 6px; border: none; font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer; letter-spacing: .5px; }
+  .btn-primary { background: var(--blue);   color: #000; }
+  .btn-buy     { background: var(--green);  color: #000; }
+  .btn-clear   { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+  /* ── SIMULAÇÃO ───────────────────────────────────────────────── */
+  .sim-form  { display: grid; gap: 10px; }
+  .sim-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pnl-box   { border-radius: 8px; padding: 14px; margin-top: 12px; background: var(--surface2); border: 1px solid var(--border); display: none; }
+  .pnl-box.show { display: block; }
+  .pnl-value { font-size: 28px; font-weight: 700; margin: 4px 0; }
+  .pnl-detail { font-size: 11px; color: var(--muted); }
+
+  /* ── RISCO ───────────────────────────────────────────────────── */
+  .risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .risk-item { background: var(--surface2); border-radius: 8px; padding: 12px; border: 1px solid var(--border); }
+  .risk-item label { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .risk-item input { width: 100%; background: transparent; border: none; color: var(--text); font-family: var(--font); font-size: 16px; font-weight: 700; }
+  .risk-item input:focus { outline: none; }
+  .risk-result { margin-top: 8px; padding: 10px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); }
+  .risk-result label { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .risk-result span { font-size: 18px; font-weight: 700; }
+
+  /* ── JOURNAL ─────────────────────────────────────────────────── */
+  #trade-log { max-height: 240px; overflow-y: auto; }
+  #trade-log::-webkit-scrollbar { width: 4px; }
+  #trade-log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .trade-row { display: grid; grid-template-columns: 80px 70px 90px 90px 70px 1fr 50px; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; align-items: center; }
+  .trade-row.header { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; }
+  .tag { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+  .tag.C { background: #3fb95022; color: var(--green); }
+  .tag.V { background: #f8514922; color: var(--red); }
+
+  .up { color: var(--green); } .down { color: var(--red); } .neutral { color: var(--muted); }
+
+  .refresh-bar { display: flex; align-items: center; gap: 8px; padding: 8px 24px 16px; color: var(--muted); font-size: 11px; }
+  .progress { flex: none; width: 120px; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--blue); border-radius: 2px; transition: width 1s linear; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>WDO — Mini Dólar · Dashboard Operacional</h1>
+  <span id="clock" style="color:var(--muted);font-size:12px;"></span>
+</header>
+
+<div class="main">
+
+  <!-- ── SINAL DA IA ──────────────────────────────────────────── -->
+  <div id="signal-card" class="signal-card NEUTRO">
+    <div class="card-title" style="margin-bottom:0;">
+      <span>Sinal IA — Análise Pré-Mercado</span>
+      <span id="signal-age" style="font-size:11px;color:var(--muted);">carregando...</span>
+    </div>
+
+    <div style="margin-top:16px;" id="signal-body">
+      <div style="color:var(--muted);text-align:center;padding:24px 0;">Carregando sinal...</div>
+    </div>
+  </div>
+
+  <!-- ── PRÉ-MERCADO ─────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">Dados Pré-Mercado</div>
+    <div class="market-grid" id="market-grid">
+      <div style="color:var(--muted);font-size:12px;">Aguardando sinal...</div>
+    </div>
+  </div>
+
+  <!-- ── TICKER AO VIVO ─────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">
+      <span>WDO — Preço ao Vivo · <span id="wdo-contract" style="color:var(--purple);">—</span></span>
+      <span id="live-badge" style="font-size:10px;color:var(--muted);">configure token abaixo</span>
+    </div>
+    <div class="latency-bar">
+      <span class="latency-dot fresh" id="lat-dot"></span>
+      <span style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Última atualização:</span>
+      <span style="color:var(--muted);" id="lat-ts">--:--:--</span>
+      <span class="latency-age fresh" id="lat-age">—</span>
+    </div>
+    <div class="ticker-row">
+      <div class="ticker-price neutral" id="wdo-price">—</div>
+      <div class="ticker-change neutral" id="wdo-change">aguardando...</div>
+    </div>
+    <div class="ticker-meta">
+      <div class="meta-item"><label>Abertura</label><span id="wdo-open">—</span></div>
+      <div class="meta-item"><label>Mínima</label><span id="wdo-low">—</span></div>
+      <div class="meta-item"><label>Máxima</label><span id="wdo-high">—</span></div>
+      <div class="meta-item"><label>Tick</label><span>0,5 pt = R$ 5</span></div>
+    </div>
+  </div>
+
+  <!-- ── API CONFIG ──────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">Conexão brapi.dev — Preço ao Vivo</div>
+    <div class="api-row">
+      <div class="field" style="flex:3;">
+        <label>Token brapi.dev</label>
+        <input type="password" id="api-token" placeholder="Cole seu token (gratuito em brapi.dev)" oninput="saveToken()">
+      </div>
+      <div class="field">
+        <label>Contrato</label>
+        <input type="text" id="api-contract" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div class="field">
+        <label>Intervalo</label>
+        <select id="api-interval">
+          <option value="15">15s</option>
+          <option value="30" selected>30s</option>
+          <option value="60">60s</option>
+        </select>
+      </div>
+      <div><button class="btn btn-primary" onclick="startLive()">Conectar</button></div>
+    </div>
+    <div class="api-status idle" id="api-status">Configure o token para ativar preço ao vivo.</div>
+  </div>
+
+  <!-- ── SIMULAÇÃO + RISCO ───────────────────────────────────── -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Simulação de Trade</div>
+      <div class="sim-form">
+        <div class="sim-row">
+          <div class="field">
+            <label>Direção</label>
+            <select id="wdo-dir">
+              <option value="C">Compra (Long)</option>
+              <option value="V">Venda (Short)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Contratos</label>
+            <input type="number" id="wdo-qty" value="1" min="1">
+          </div>
+        </div>
+        <div class="sim-row">
+          <div class="field">
+            <label>Entrada (pts)</label>
+            <input type="number" id="wdo-entry" placeholder="ex: 5.835,00" step="0.5">
+          </div>
+          <div class="field">
+            <label>Saída (pts)</label>
+            <input type="number" id="wdo-exit" placeholder="ex: 5.847,50" step="0.5">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-buy" onclick="calcSim()">Calcular</button>
+          <button class="btn btn-clear" onclick="clearSim()">Limpar</button>
+          <button class="btn btn-buy" style="margin-left:auto;" onclick="addTrade()">+ Registrar</button>
+        </div>
+        <div class="pnl-box" id="wdo-pnl-box">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Resultado estimado</div>
+          <div class="pnl-value" id="wdo-pnl-value"></div>
+          <div class="pnl-detail" id="wdo-pnl-detail"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Gestão de Risco</div>
+      <div class="risk-grid">
+        <div class="risk-item"><label>Capital (R$)</label><input type="number" id="risk-capital" value="10000" oninput="calcRisk();saveRisk()"></div>
+        <div class="risk-item"><label>Risco / Trade (%)</label><input type="number" id="risk-pct" value="1" step="0.1" oninput="calcRisk();saveRisk()"></div>
+        <div class="risk-item"><label>Stop (pts)</label><input type="number" id="risk-stop" value="25" step="0.5" oninput="calcRisk();saveRisk()"></div>
+        <div class="risk-item"><label>Limite Diário (%)</label><input type="number" id="risk-daily-pct" value="2" step="0.1" oninput="calcRisk();saveRisk()"></div>
+      </div>
+      <div class="risk-result"><label>Risco máx. / trade</label><span id="risk-max" class="down">—</span></div>
+      <div class="risk-result"><label>Contratos pelo stop</label><span id="risk-lots">—</span></div>
+      <div class="risk-result"><label>Perda máx. diária</label><span id="risk-daily-max" class="down">—</span></div>
+    </div>
+  </div>
+
+  <!-- ── JOURNAL ─────────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">
+      <span>Diário de Trades — P&L: <span id="daily-pnl" class="neutral">R$ 0,00</span> · <span id="daily-count" style="color:var(--muted);">0 trades</span></span>
+      <button class="btn btn-clear" style="font-size:10px;padding:3px 10px;" onclick="clearLog()">Limpar</button>
+    </div>
+    <div class="trade-row header">
+      <span>Hora</span><span>Direção</span><span>Entrada</span><span>Saída</span><span>Pts</span><span>Resultado</span><span>Qty</span>
+    </div>
+    <div id="trade-log">
+      <div style="padding:20px;text-align:center;color:var(--muted);">Nenhum trade registrado.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="refresh-bar">
+  <span id="refresh-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--border);margin-right:4px;"></span>
+  <span id="refresh-label">—</span>
+  <div class="progress"><div class="progress-fill" id="prog" style="width:100%"></div></div>
+  <span id="next-refresh">—</span>
+</div>
+
+<script>
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const fmt   = (n, d=2) => n == null || isNaN(n) ? '—' : n.toLocaleString('pt-BR', {minimumFractionDigits:d, maximumFractionDigits:d});
+const fmtBRL = n => n == null ? '—' : 'R$ ' + fmt(n);
+
+// ── Relógio ───────────────────────────────────────────────────────────────────
+setInterval(() => {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'}) + ' · ' +
+    now.toLocaleTimeString('pt-BR');
+  renderLatency();
+}, 1000);
+
+// ── Carregar signal.json ──────────────────────────────────────────────────────
+const MONTH_CODES = list => list; // placeholder
+async function loadSignal() {
+  try {
+    const res = await fetch('signal.json?t=' + Date.now());
+    if (!res.ok) throw new Error('signal.json não encontrado');
+    const s = await res.json();
+    renderSignal(s);
+    renderMarketData(s.market_data || {});
+  } catch (e) {
+    document.getElementById('signal-body').innerHTML =
+      `<div style="color:var(--muted);text-align:center;padding:24px 0;">
+         Sinal não carregado: ${e.message}<br>
+         <small>Verifique se está rodando via servidor (não file://)</small>
+       </div>`;
+  }
+}
+
+function renderSignal(s) {
+  const card = document.getElementById('signal-card');
+  const body = document.getElementById('signal-body');
+  const bias = s.bias || 'NEUTRO';
+
+  card.className = `signal-card ${bias}`;
+
+  const arrow = bias === 'ALTA' ? '▲' : bias === 'BAIXA' ? '▼' : '—';
+  const conf  = s.confianca ?? 0;
+  const confCls = conf >= 70 ? 'high' : conf >= 45 ? 'medium' : 'low';
+  const valBadge = s.validade && s.validade !== '—'
+    ? `<span class="validade-badge ${s.validade}">${s.validade.replace('_', ' ')}</span>` : '';
+
+  const favorHTML  = (s.fatores_favor  || []).map(f => `<div class="factor-item">${f}</div>`).join('') || '<div class="factor-item">—</div>';
+  const contraHTML = (s.fatores_contra || []).map(f => `<div class="factor-item">${f}</div>`).join('') || '<div class="factor-item">—</div>';
+
+  const alertaHTML = s.alerta
+    ? `<div class="alerta-box">⚠ ${s.alerta}</div>` : '';
+
+  const geradoEm = s.gerado_em
+    ? new Date(s.gerado_em).toLocaleString('pt-BR')
+    : 'nunca';
+
+  body.innerHTML = `
+    <div class="signal-header">
+      <div class="signal-badge ${bias}">
+        <span class="signal-arrow">${arrow}</span>
+        <span>${bias}</span>
+      </div>
+      <div class="confidence-wrap">
+        <div class="confidence-label">Confiança</div>
+        <div class="confidence-value ${confCls}">${conf}%</div>
+      </div>
+    </div>
+    <div class="signal-resumo">${s.resumo || '—'}</div>
+    <div class="signal-driver">Driver principal: <span>${s.fator_principal || '—'}</span></div>
+    <div class="signal-factors">
+      <div class="factor-box">
+        <div class="factor-box-title favor">A favor</div>
+        ${favorHTML}
+      </div>
+      <div class="factor-box">
+        <div class="factor-box-title contra">Contra</div>
+        ${contraHTML}
+      </div>
+    </div>
+    ${alertaHTML}
+    <div class="signal-meta">
+      ${valBadge}
+      <span>Contrato: <strong>${s.contrato || '—'}</strong></span>
+      <span style="margin-left:auto;">Gerado: ${geradoEm}</span>
+    </div>`;
+
+  // Preencher zonas sugeridas nos campos de nível se existirem
+  const z = s.zonas_sugeridas || {};
+  ['r2','r1','s1','s2'].forEach(k => {
+    const mapKey = k === 'r2' ? 'resistencia2' : k === 'r1' ? 'resistencia1' : k === 's1' ? 'suporte1' : 'suporte2';
+    const el = document.getElementById('in-'+k);
+    if (el && z[mapKey]) el.value = z[mapKey];
+  });
+
+  document.getElementById('signal-age').textContent =
+    s.gerado_em ? `gerado às ${new Date(s.gerado_em).toLocaleTimeString('pt-BR')}` : '';
+}
+
+function renderMarketData(md) {
+  const grid = document.getElementById('market-grid');
+  const entries = Object.entries(md);
+  if (!entries.length) { grid.innerHTML = '<div style="color:var(--muted);">Sem dados de mercado.</div>'; return; }
+
+  grid.innerHTML = entries.map(([, d]) => {
+    if (!d || !d.price) return '';
+    const chg = d.change_pct ?? 0;
+    const cls = chg > 0 ? 'up' : chg < 0 ? 'down' : 'neutral';
+    const sign = chg >= 0 ? '+' : '';
+    return `
+      <div class="market-item">
+        <div class="market-item-label">${d.label || ''}</div>
+        <div class="market-item-price ${cls}">${d.price}</div>
+        <div class="market-item-chg ${cls}">${sign}${fmt(chg)}%</div>
+      </div>`;
+  }).join('');
+}
+
+// ── Ticker ao vivo (brapi.dev) ────────────────────────────────────────────────
+const tickerState = { price:null, open:null, high:null, low:null, change:null, changePct:null, lastUpdate:null, timer:null, interval:30, left:30 };
+
+function autoContract() {
+  const codes = 'FGHJKMNQUVXZ'.split('');
+  const now = new Date(); let m = now.getMonth(), y = now.getFullYear() % 100;
+  if (now.getDate() > 10) { m++; if (m > 11) { m = 0; y++; } }
+  return 'WDO' + codes[m] + String(y).padStart(2,'0');
+}
+
+async function fetchLive(contract, token) {
+  const res = await fetch(`https://brapi.dev/api/quote/${contract}?token=${token}&fundamental=false`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  const q = data?.results?.[0];
+  if (!q?.regularMarketPrice) throw new Error('Sem dados para ' + contract);
+  return { price: q.regularMarketPrice, open: q.regularMarketOpen??q.regularMarketPrice, high: q.regularMarketDayHigh??q.regularMarketPrice, low: q.regularMarketDayLow??q.regularMarketPrice, change: q.regularMarketChange??0, changePct: q.regularMarketChangePercent??0 };
+}
+
+async function refreshLive() {
+  const token    = document.getElementById('api-token').value.trim();
+  const contract = document.getElementById('api-contract').value.trim() || autoContract();
+  document.getElementById('wdo-contract').textContent = contract;
+  const statusEl = document.getElementById('api-status');
+  try {
+    const q = await fetchLive(contract, token);
+    Object.assign(tickerState, q, { lastUpdate: new Date() });
+    renderTicker();
+    statusEl.textContent = `Conectado — ${contract} — ${tickerState.lastUpdate.toLocaleTimeString('pt-BR')}`;
+    statusEl.className = 'api-status ok';
+    document.getElementById('live-badge').textContent = 'AO VIVO';
+    document.getElementById('live-badge').style.color = 'var(--green)';
+    document.getElementById('refresh-dot').style.background = 'var(--green)';
+    document.getElementById('refresh-label').textContent = 'Próxima atualização:';
+  } catch(e) {
+    statusEl.textContent = `Erro: ${e.message}`;
+    statusEl.className = 'api-status err';
+  }
+}
+
+function renderTicker() {
+  const { price, open, high, low, change, changePct } = tickerState;
+  if (price == null) return;
+  const dir = change >= 0;
+  document.getElementById('wdo-price').textContent  = fmt(price);
+  document.getElementById('wdo-price').className    = 'ticker-price ' + (dir?'up':'down');
+  document.getElementById('wdo-change').textContent = `${dir?'▲':'▼'} ${dir?'+':''}${fmt(change)} (${dir?'+':''}${fmt(changePct)}%)`;
+  document.getElementById('wdo-change').className   = 'ticker-change ' + (dir?'up':'down');
+  document.getElementById('wdo-open').textContent   = fmt(open);
+  document.getElementById('wdo-high').textContent   = fmt(high);
+  document.getElementById('wdo-low').textContent    = fmt(low);
+}
+
+function renderLatency() {
+  if (!tickerState.lastUpdate) return;
+  const age = Math.floor((new Date() - tickerState.lastUpdate) / 1000);
+  const cls = age < 15 ? 'fresh' : age < 90 ? 'warn' : 'stale';
+  document.getElementById('lat-ts').textContent = tickerState.lastUpdate.toLocaleTimeString('pt-BR');
+  const ageEl = document.getElementById('lat-age');
+  ageEl.textContent = age + 's atrás'; ageEl.className = 'latency-age ' + cls;
+  document.getElementById('lat-dot').className = 'latency-dot ' + cls;
+}
+
+function startLive() {
+  const token = document.getElementById('api-token').value.trim();
+  if (!token) { document.getElementById('api-status').textContent = 'Token vazio. Cadastre-se em brapi.dev.'; document.getElementById('api-status').className='api-status err'; return; }
+  saveToken();
+  if (tickerState.timer) clearInterval(tickerState.timer);
+  tickerState.interval = parseInt(document.getElementById('api-interval').value);
+  tickerState.left     = tickerState.interval;
+  refreshLive();
+  tickerState.timer = setInterval(() => {
+    tickerState.left--;
+    document.getElementById('prog').style.width = (tickerState.left / tickerState.interval * 100) + '%';
+    document.getElementById('next-refresh').textContent = tickerState.left + 's';
+    if (tickerState.left <= 0) { refreshLive(); tickerState.left = tickerState.interval; }
+  }, 1000);
+}
+
+// ── Persistência ──────────────────────────────────────────────────────────────
+function saveToken() { localStorage.setItem('wdo_token', document.getElementById('api-token').value); }
+function saveRisk()  {
+  localStorage.setItem('wdo_risk', JSON.stringify({
+    capital: document.getElementById('risk-capital').value,
+    pct:     document.getElementById('risk-pct').value,
+    stop:    document.getElementById('risk-stop').value,
+    daily:   document.getElementById('risk-daily-pct').value,
+  }));
+}
+function loadSaved() {
+  const token = localStorage.getItem('wdo_token');
+  if (token) document.getElementById('api-token').value = token;
+  const risk = JSON.parse(localStorage.getItem('wdo_risk')||'null');
+  if (risk) {
+    document.getElementById('risk-capital').value   = risk.capital;
+    document.getElementById('risk-pct').value       = risk.pct;
+    document.getElementById('risk-stop').value      = risk.stop;
+    document.getElementById('risk-daily-pct').value = risk.daily;
+  }
+  document.getElementById('api-contract').placeholder = autoContract();
+  calcRisk();
+}
+
+// ── Simulação ─────────────────────────────────────────────────────────────────
+function calcSim() {
+  const dir=document.getElementById('wdo-dir').value, qty=parseFloat(document.getElementById('wdo-qty').value)||1;
+  const entry=parseFloat(document.getElementById('wdo-entry').value), exit=parseFloat(document.getElementById('wdo-exit').value);
+  if (!entry||!exit) return;
+  const pts = dir==='C'?(exit-entry):(entry-exit), pnl = pts*10*qty;
+  const box = document.getElementById('wdo-pnl-box'); box.classList.add('show');
+  const val = document.getElementById('wdo-pnl-value');
+  val.textContent = fmtBRL(pnl); val.className = 'pnl-value '+(pnl>=0?'up':'down');
+  document.getElementById('wdo-pnl-detail').textContent = `${fmt(Math.abs(pts),1)} pts · ${Math.abs(Math.round(pts/0.5))} ticks · ${qty} contrato(s) · ${dir==='C'?'Compra':'Venda'}`;
+}
+function clearSim() { document.getElementById('wdo-entry').value=''; document.getElementById('wdo-exit').value=''; document.getElementById('wdo-pnl-box').classList.remove('show'); }
+
+// ── Journal ───────────────────────────────────────────────────────────────────
+const journal = { trades:[], pnl:0 };
+function addTrade() {
+  const dir=document.getElementById('wdo-dir').value, qty=parseFloat(document.getElementById('wdo-qty').value)||1;
+  const entry=parseFloat(document.getElementById('wdo-entry').value), exit=parseFloat(document.getElementById('wdo-exit').value);
+  if (!entry||!exit) { alert('Preencha entrada e saída.'); return; }
+  const pts=dir==='C'?(exit-entry):(entry-exit), pnl=pts*10*qty;
+  journal.trades.push({ time:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), dir, qty, entry, exit, pnl, pts });
+  journal.pnl += pnl; renderLog(); clearSim();
+}
+function renderLog() {
+  const log = document.getElementById('trade-log');
+  if (!journal.trades.length) { log.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);">Nenhum trade.</div>'; return; }
+  log.innerHTML = journal.trades.slice().reverse().map(t=>`
+    <div class="trade-row">
+      <span>${t.time}</span>
+      <span><span class="tag ${t.dir}">${t.dir==='C'?'COMPRA':'VENDA'}</span></span>
+      <span>${fmt(t.entry)}</span><span>${fmt(t.exit)}</span>
+      <span class="${t.pts>=0?'up':'down'}">${t.pts>=0?'+':''}${fmt(t.pts,1)}</span>
+      <span class="${t.pnl>=0?'up':'down'}" style="font-weight:700;">${fmtBRL(t.pnl)}</span>
+      <span style="color:var(--muted);">${t.qty}x</span>
+    </div>`).join('');
+  const dp = document.getElementById('daily-pnl');
+  dp.textContent = fmtBRL(journal.pnl); dp.className = journal.pnl>0?'up':journal.pnl<0?'down':'neutral';
+  document.getElementById('daily-count').textContent = `${journal.trades.length} trade${journal.trades.length!==1?'s':''}`;
+}
+function clearLog() { if (!confirm('Limpar todos os trades?')) return; journal.trades=[]; journal.pnl=0; renderLog(); }
+
+// ── Risco ─────────────────────────────────────────────────────────────────────
+function calcRisk() {
+  const capital=parseFloat(document.getElementById('risk-capital').value)||0;
+  const pct=parseFloat(document.getElementById('risk-pct').value)||0;
+  const stop=parseFloat(document.getElementById('risk-stop').value)||1;
+  const daily=parseFloat(document.getElementById('risk-daily-pct').value)||0;
+  const max=capital*(pct/100), lots=Math.floor(max/(stop*10)), dailyMax=capital*(daily/100);
+  document.getElementById('risk-max').textContent      = fmtBRL(max);
+  document.getElementById('risk-lots').textContent     = `${lots} contrato${lots!==1?'s':''}`;
+  document.getElementById('risk-daily-max').textContent = fmtBRL(dailyMax);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadSaved();
+renderLog();
+loadSignal();
+// Recarrega o sinal a cada 5 minutos (para pegar atualizações do GitHub Actions)
+setInterval(loadSignal, 5 * 60 * 1000);
+</script>
+</body>
+</html>

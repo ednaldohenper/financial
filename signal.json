@@ -1,0 +1,20 @@
+{
+  "bias": "NEUTRO",
+  "confianca": 0,
+  "resumo": "Sinal ainda não gerado. Execute o script ou aguarde a automação às 8h55.",
+  "fator_principal": "—",
+  "fatores_favor": [],
+  "fatores_contra": [],
+  "zonas_sugeridas": {
+    "resistencia2": null,
+    "resistencia1": null,
+    "suporte1": null,
+    "suporte2": null
+  },
+  "validade": "—",
+  "alerta": null,
+  "contrato": "—",
+  "gerado_em": null,
+  "market_data": {},
+  "tokens_usados": 0
+}
