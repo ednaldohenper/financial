@@ -634,7 +634,7 @@ function renderPlano(s) {
     ${p.cancelar_se ? `<div class="plano-cancelar">⚠ Cancelar se: ${p.cancelar_se}</div>` : ''}
 
     <!-- Indicador de proximidade ao gatilho -->
-    <div id="proximidade-wrap" style="margin-top:14px;display:none;">
+    <div id="proximidade-wrap" style="margin-top:14px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px;">
         <div>
           <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Preço atual</div>
@@ -822,7 +822,7 @@ function resetTemperatura() {
 }
 
 function atualizarTemperatura() {
-  if (!autoEntrada || !lastSignal || !lastSignal.plano) return;
+  if (!lastSignal || !lastSignal.plano) return;
   const gatilho = lastSignal.plano.entrada_nivel;
   const atual   = tickerState.price;
   if (!gatilho || !atual) return;
