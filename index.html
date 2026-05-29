@@ -120,10 +120,6 @@
   /* ── API CONFIG ──────────────────────────────────────────────── */
   .api-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
   .api-row .field { flex: 1; min-width: 140px; }
-  .api-status { font-size: 11px; margin-top: 8px; padding: 6px 10px; border-radius: 6px; background: var(--surface2); border: 1px solid var(--border); }
-  .api-status.ok   { color: var(--green); border-color: #3fb95044; }
-  .api-status.err  { color: var(--red);   border-color: #f8514944; }
-  .api-status.idle { color: var(--muted); }
 
   /* ── FORM ────────────────────────────────────────────────────── */
   .field label { display: block; font-size: 10px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
@@ -477,21 +473,6 @@ function renderLatency() {
   document.getElementById('lat-dot').className = 'latency-dot ' + cls;
 }
 
-function startLive() {
-  const token = document.getElementById('api-token').value.trim();
-  if (!token) { document.getElementById('api-status').textContent = 'Token vazio. Cadastre-se em brapi.dev.'; document.getElementById('api-status').className='api-status err'; return; }
-  saveToken();
-  if (tickerState.timer) clearInterval(tickerState.timer);
-  tickerState.interval = parseInt(document.getElementById('api-interval').value);
-  tickerState.left     = tickerState.interval;
-  refreshLive();
-  tickerState.timer = setInterval(() => {
-    tickerState.left--;
-    document.getElementById('prog').style.width = (tickerState.left / tickerState.interval * 100) + '%';
-    document.getElementById('next-refresh').textContent = tickerState.left + 's';
-    if (tickerState.left <= 0) { refreshLive(); tickerState.left = tickerState.interval; }
-  }, 1000);
-}
 
 // ── Persistência ──────────────────────────────────────────────────────────────
 function saveRisk()  {
