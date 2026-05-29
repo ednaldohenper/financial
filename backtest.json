@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-05-29T14:56:42.400847-03:00",
+  "gerado_em": "2026-05-29T15:13:23.047958-03:00",
   "pregoes_analisados": 15,
   "acuracia_pct": 38,
   "acertos": 3,
@@ -8,6 +8,8 @@
     {
       "data": "2026-05-11",
       "data_fmt": "11/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 4898.5,
       "fechamento_pts": 4895.5,
       "variacao_pts": -3.0,
@@ -26,6 +28,8 @@
     {
       "data": "2026-05-12",
       "data_fmt": "12/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 4896.0,
       "fechamento_pts": 4900.5,
       "variacao_pts": 4.5,
@@ -44,6 +48,8 @@
     {
       "data": "2026-05-13",
       "data_fmt": "13/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 4894.0,
       "fechamento_pts": 4909.0,
       "variacao_pts": 15.0,
@@ -62,6 +68,8 @@
     {
       "data": "2026-05-14",
       "data_fmt": "14/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 5008.0,
       "fechamento_pts": 4982.0,
       "variacao_pts": -26.0,
@@ -80,6 +88,8 @@
     {
       "data": "2026-05-15",
       "data_fmt": "15/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 5023.0,
       "fechamento_pts": 5041.0,
       "variacao_pts": 18.0,
@@ -98,6 +108,8 @@
     {
       "data": "2026-05-18",
       "data_fmt": "18/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 5058.5,
       "fechamento_pts": 5033.5,
       "variacao_pts": -25.0,
@@ -116,6 +128,8 @@
     {
       "data": "2026-05-19",
       "data_fmt": "19/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 5012.0,
       "fechamento_pts": 5011.0,
       "variacao_pts": -1.0,
@@ -134,6 +148,8 @@
     {
       "data": "2026-05-20",
       "data_fmt": "20/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 5041.0,
       "fechamento_pts": 5033.5,
       "variacao_pts": -7.5,
@@ -152,6 +168,8 @@
     {
       "data": "2026-05-21",
       "data_fmt": "21/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 5017.5,
       "fechamento_pts": 5024.0,
       "variacao_pts": 6.5,
@@ -170,6 +188,8 @@
     {
       "data": "2026-05-22",
       "data_fmt": "22/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 5014.0,
       "fechamento_pts": 5009.5,
       "variacao_pts": -4.5,
@@ -188,6 +208,8 @@
     {
       "data": "2026-05-25",
       "data_fmt": "25/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 5020.5,
       "fechamento_pts": 4995.0,
       "variacao_pts": -25.5,
@@ -206,6 +228,8 @@
     {
       "data": "2026-05-26",
       "data_fmt": "26/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 5018.5,
       "fechamento_pts": 5013.0,
       "variacao_pts": -5.5,
@@ -221,6 +245,8 @@
     {
       "data": "2026-05-27",
       "data_fmt": "27/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 5022.0,
       "fechamento_pts": 5033.0,
       "variacao_pts": 11.0,
@@ -239,6 +265,8 @@
     {
       "data": "2026-05-28",
       "data_fmt": "28/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 5066.0,
       "fechamento_pts": 5069.5,
       "variacao_pts": 3.5,
@@ -257,6 +285,8 @@
     {
       "data": "2026-05-29",
       "data_fmt": "29/05",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
       "abertura_pts": 5038.5,
       "fechamento_pts": 5036.5,
       "variacao_pts": -2.0,

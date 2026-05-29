@@ -1,33 +1,33 @@
 {
   "bias": "ALTA",
-  "confianca": 62,
-  "resumo": "DXY estável com leve queda (-0.11%) e USD/BRL em recuo (-0.52%) criam pressão altista no WDO, apesar do risco-off parcial. Ouro subindo forte (+1.94%) e petróleo caindo (-2.61%) reforçam cenário de dólar forte, favorável ao contrato.",
-  "fator_principal": "Enfraquecimento do real (USD/BRL -0.52%) combinado com busca por segurança (ouro +1.94%) mantém demanda por dólar elevada",
+  "confianca": 68,
+  "resumo": "Sinal de alta moderada sustentado principalmente pelo fortalecimento do dólar (DXY estável, USD/BRL em queda) e movimento de risk-off global (ouro +1.96%). Petróleo em queda leve (-1.95%) reduz pressão sobre o real exportador, favorecendo apreciação do dólar contra o real.",
+  "fator_principal": "Fortalecimento relativo do USD/BRL (queda de -0.57%) combinado com ambiente de risk-off (ouro em alta) indica demanda por moedas-refúgio",
   "fatores_favor": [
-    "Ouro em alta significativa (+1.94%) sinalizando aversão ao risco e fortalecimento do dólar",
-    "USD/BRL caindo — real se fortalecendo localmente, aumentando demanda por hedge em WDO",
-    "Futures de renda variável estáveis (S&P +0.11%, Nikkei -0.47%) sem pressão de venda forte"
+    "Ouro subindo forte (+1.96%) = risk-off global = ambiente bullish para dólar",
+    "USD/BRL em queda (-0.57%) = dólar apreciando contra real = WDO deve subir",
+    "DXY estável com leve pressão de baixa, mas correlação positiva ~0.85 com WDO mantém pressão de alta"
   ],
   "fatores_contra": [
-    "DXY com queda leve, sinalizando possível consolidação lateral do dólar",
-    "EUR/USD em alta (+0.42%) contraria correlação positiva esperada com WDO",
-    "Petróleo caindo forte (-2.61%) reduz demanda por BRL de exportadores, neutralizando parte do cenário altista"
+    "EUR/USD subindo (+0.42%) = correlação negativa com WDO reduz força do sinal",
+    "Petróleo em queda (-1.95%) = potencial fortalecimento futuro do real exportador",
+    "Índices futuros americanos com ganhos modestos = risco-off não confirmado com força"
   ],
   "zonas_sugeridas": {
-    "resistencia2": 5095,
-    "resistencia1": 5065,
-    "suporte1": 5015,
-    "suporte2": 4975
+    "resistencia2": 5105,
+    "resistencia1": 5085,
+    "suporte1": 5045,
+    "suporte2": 5015
   },
   "validade": "manha",
-  "alerta": "Confiança moderada: sinais de alta existem, mas DXY praticamente estável limita força direcional. EUR/USD em contracorrente reduz clareza. Acompanhar abertura B3 e renovação de volatilidade.",
+  "alerta": "Confiança moderada: sinais de alta e baixa em conflito parcial. EUR/USD subindo contrabalanceia força do DXY. Monitorar abertura de B3 e reação imediata; viés pode inverter se petróleo recuperar ou risk-off dissipar.",
   "contrato": "WDOM26",
-  "gerado_em": "2026-05-29T14:56:40.814578-03:00",
+  "gerado_em": "2026-05-29T15:13:21.561943-03:00",
   "market_data": {
     "DXY": {
       "label": "DXY — Índice do Dólar",
-      "price": 98.91,
-      "change_pct": -0.11
+      "price": 98.929,
+      "change_pct": -0.09
     },
     "EURUSD": {
       "label": "EUR/USD",
@@ -36,23 +36,23 @@
     },
     "SP500F": {
       "label": "S&P 500 Futures",
-      "price": 7590.25,
-      "change_pct": 0.11
+      "price": 7587.0,
+      "change_pct": 0.07
     },
     "NASDAQF": {
       "label": "Nasdaq Futures",
-      "price": 30339.5,
-      "change_pct": 0.11
+      "price": 30322.25,
+      "change_pct": 0.05
     },
     "OURO": {
       "label": "Ouro (XAU/USD)",
-      "price": 4586.5,
-      "change_pct": 1.94
+      "price": 4587.3999,
+      "change_pct": 1.96
     },
     "PETROLEO": {
       "label": "Petróleo WTI",
-      "price": 86.58,
-      "change_pct": -2.61
+      "price": 87.17,
+      "change_pct": -1.95
     },
     "NIKKEI": {
       "label": "Nikkei 225",
@@ -66,9 +66,9 @@
     },
     "USDBRL": {
       "label": "USD/BRL spot",
-      "price": 5.0467,
-      "change_pct": -0.52
+      "price": 5.0439,
+      "change_pct": -0.57
     }
   },
-  "tokens_usados": 1397
+  "tokens_usados": 1403
 }
