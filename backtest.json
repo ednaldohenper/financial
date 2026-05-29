@@ -1,9 +1,9 @@
 {
-  "gerado_em": "2026-05-29T15:13:23.047958-03:00",
+  "gerado_em": "2026-05-29T15:24:49.011285-03:00",
   "pregoes_analisados": 15,
-  "acuracia_pct": 38,
+  "acuracia_pct": 33,
   "acertos": 3,
-  "erros": 5,
+  "erros": 6,
   "sessions": [
     {
       "data": "2026-05-11",
@@ -18,11 +18,12 @@
       "sinal_previsto": "NEUTRO",
       "confianca_previsao": 10,
       "acertou": null,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": -0.417,
-        "EURUSD": -0.135,
-        "SP500": 0.761,
-        "OURO": 0.438
+        "DXY": -0.41730652631997156,
+        "EURUSD": -0.13491354522860988,
+        "SP500": 0.7605595545294053,
+        "OURO": 0.43831862020387025
       }
     },
     {
@@ -38,11 +39,12 @@
       "sinal_previsto": "BAIXA",
       "confianca_previsao": 30,
       "acertou": false,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": 0.102,
-        "EURUSD": 0.318,
-        "SP500": 0.239,
-        "OURO": -0.036
+        "DXY": 0.10221392810589869,
+        "EURUSD": 0.317757127104068,
+        "SP500": 0.23925057285347773,
+        "OURO": -0.03600769143322635
       }
     },
     {
@@ -58,11 +60,12 @@
       "sinal_previsto": "NEUTRO",
       "confianca_previsao": 10,
       "acertou": null,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": 0.357,
-        "EURUSD": 0.094,
-        "SP500": -0.138,
-        "OURO": -0.871
+        "DXY": 0.3573600831085155,
+        "EURUSD": 0.09423207141905365,
+        "SP500": -0.13782902477560421,
+        "OURO": -0.8710046401565918
       }
     },
     {
@@ -78,11 +81,12 @@
       "sinal_previsto": "ALTA",
       "confianca_previsao": 40,
       "acertou": false,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": 0.193,
-        "EURUSD": -0.378,
-        "SP500": 0.579,
-        "OURO": 0.43
+        "DXY": 0.1933080065484427,
+        "EURUSD": -0.37786875142813425,
+        "SP500": 0.5790076078906692,
+        "OURO": 0.42970962110080446
       }
     },
     {
@@ -98,11 +102,12 @@
       "sinal_previsto": "ALTA",
       "confianca_previsao": 20,
       "acertou": true,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": 0.406,
-        "EURUSD": -0.165,
-        "SP500": 0.75,
-        "OURO": -0.417
+        "DXY": 0.40616763083833884,
+        "EURUSD": -0.1652005536549872,
+        "SP500": 0.7497155097396124,
+        "OURO": -0.41722751221560106
       }
     },
     {
@@ -118,11 +123,12 @@
       "sinal_previsto": "ALTA",
       "confianca_previsao": 60,
       "acertou": false,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": 0.394,
-        "EURUSD": -0.461,
-        "SP500": -1.239,
-        "OURO": -2.614
+        "DXY": 0.3944168694189232,
+        "EURUSD": -0.46064690808581554,
+        "SP500": -1.2391203242309468,
+        "OURO": -2.614315436089598
       }
     },
     {
@@ -138,11 +144,12 @@
       "sinal_previsto": "NEUTRO",
       "confianca_previsao": 10,
       "acertou": null,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": -0.302,
-        "EURUSD": -0.409,
-        "SP500": -0.087,
-        "OURO": -0.072
+        "DXY": -0.30220150348341246,
+        "EURUSD": -0.40883741383656025,
+        "SP500": -0.08745669211880358,
+        "OURO": -0.0724308536144358
       }
     },
     {
@@ -158,11 +165,12 @@
       "sinal_previsto": "NEUTRO",
       "confianca_previsao": 10,
       "acertou": null,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": 0.333,
-        "EURUSD": 0.351,
-        "SP500": -0.643,
-        "OURO": -1.015
+        "DXY": 0.3334362200509533,
+        "EURUSD": 0.3508207954415088,
+        "SP500": -0.6430326903006378,
+        "OURO": -1.014831308347064
       }
     },
     {
@@ -178,11 +186,12 @@
       "sinal_previsto": "NEUTRO",
       "confianca_previsao": 10,
       "acertou": null,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": -0.191,
-        "EURUSD": -0.412,
-        "SP500": 1.0,
-        "OURO": 0.555
+        "DXY": -0.19134182836552105,
+        "EURUSD": -0.4120467470440481,
+        "SP500": 0.9995933857414041,
+        "OURO": 0.5547788891896444
       }
     },
     {
@@ -198,11 +207,12 @@
       "sinal_previsto": "NEUTRO",
       "confianca_previsao": 10,
       "acertou": null,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": 0.081,
-        "EURUSD": 0.157,
-        "SP500": 0.191,
-        "OURO": 0.188
+        "DXY": 0.08072024070426842,
+        "EURUSD": 0.15694132339709732,
+        "SP500": 0.1912302479283312,
+        "OURO": 0.18758414508805998
       }
     },
     {
@@ -218,11 +228,12 @@
       "sinal_previsto": "ALTA",
       "confianca_previsao": 20,
       "acertou": false,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": 0.131,
-        "EURUSD": -0.036,
-        "SP500": 0.335,
-        "OURO": -0.414
+        "DXY": 0.1310588267146695,
+        "EURUSD": -0.03602322836829819,
+        "SP500": 0.334851326011254,
+        "OURO": -0.41411087484714004
       }
     },
     {
@@ -238,8 +249,9 @@
       "sinal_previsto": "BAIXA",
       "confianca_previsao": 95,
       "acertou": true,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "EURUSD": 0.182
+        "EURUSD": 0.18161716312452558
       }
     },
     {
@@ -255,11 +267,12 @@
       "sinal_previsto": "BAIXA",
       "confianca_previsao": 30,
       "acertou": false,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": -0.151,
-        "EURUSD": -0.042,
-        "SP500": 0.614,
-        "OURO": -0.456
+        "DXY": -0.1510285202776962,
+        "EURUSD": -0.041899471372430774,
+        "SP500": 0.6140702175944535,
+        "OURO": -0.45565356461513273
       }
     },
     {
@@ -275,11 +288,12 @@
       "sinal_previsto": "ALTA",
       "confianca_previsao": 20,
       "acertou": true,
+      "fonte_sinal": "mecanico",
       "indicadores": {
-        "DXY": 0.04,
-        "EURUSD": -0.005,
-        "SP500": 0.04,
-        "OURO": -1.175
+        "DXY": 0.040335702597471546,
+        "EURUSD": -0.004650619162338554,
+        "SP500": 0.03980363539870524,
+        "OURO": -1.1754489265765167
       }
     },
     {
@@ -292,14 +306,15 @@
       "variacao_pts": -2.0,
       "variacao_pct": -0.04,
       "resultado": "BAIXA",
-      "sinal_previsto": "NEUTRO",
-      "confianca_previsao": 10,
-      "acertou": null,
+      "sinal_previsto": "ALTA",
+      "confianca_previsao": 68,
+      "acertou": false,
+      "fonte_sinal": "claude",
       "indicadores": {
-        "DXY": -0.192,
-        "EURUSD": -0.163,
-        "SP500": 0.554,
-        "OURO": 1.165
+        "DXY": -0.19151541493763746,
+        "EURUSD": -0.16265631135273795,
+        "SP500": 0.5537135278514516,
+        "OURO": 1.1646948777403132
       }
     }
   ]
