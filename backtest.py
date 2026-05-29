@@ -83,15 +83,22 @@ def run_backtest():
         if bars_9h.empty:
             continue
 
-        # Abertura 9h
-        open_px = round(float(bars_9h.iloc[0]['Open']) * 1000 * 2) / 2
+        # Abertura 9h — primeira barra com hora == 9
+        bar_entrada = bars_9h[bars_9h.index.hour == 9].iloc[0]
+        open_px     = round(float(bar_entrada['Open']) * 1000 * 2) / 2
+        hora_entrada = str(bar_entrada.name.time())[:5]
 
-        # Fechamento ~9h30
+        # Fechamento 9h30 — primeira barra com minuto >= 30 dentro da janela
         bars_930 = bars_9h[bars_9h.index.minute >= 30]
         if not bars_930.empty:
-            close_px = round(float(bars_930.iloc[0]['Open']) * 1000 * 2) / 2
+            bar_saida = bars_930.iloc[0]
+            close_px  = round(float(bar_saida['Open']) * 1000 * 2) / 2
+            hora_saida = str(bar_saida.name.time())[:5]
         else:
-            close_px = round(float(bars_9h.iloc[-1]['Close']) * 1000 * 2) / 2
+            # fallback: close da última barra da janela (== preço às 9h30)
+            bar_saida  = bars_9h.iloc[-1]
+            close_px   = round(float(bar_saida['Close']) * 1000 * 2) / 2
+            hora_saida = str(bar_saida.name.time())[:5] + ' (close)'
 
         var_pts = round(close_px - open_px, 1)
         var_pct = round(var_pts / open_px * 100, 3) if open_px else 0
@@ -111,6 +118,8 @@ def run_backtest():
         sessions.append({
             'data':               str(day),
             'data_fmt':           datetime(day.year, day.month, day.day).strftime('%d/%m'),
+            'hora_entrada':       hora_entrada,
+            'hora_saida':         hora_saida,
             'abertura_pts':       open_px,
             'fechamento_pts':     close_px,
             'variacao_pts':       var_pts,

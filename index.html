@@ -739,18 +739,26 @@ function renderBacktest(data) {
               return `${s.data_fmt}  —  ${s.data}`;
             },
             label: item => {
-              const s      = sessions[item.dataIndex];
-              const dir    = s.variacao_pts >= 0 ? '▲ Alta' : '▼ Baixa';
-              const result = `${dir}  ${s.variacao_pts >= 0 ? '+' : ''}${s.variacao_pts} pts`;
-              const prev   = `${s.sinal_previsto}  (${s.confianca_previsao}% confiança)`;
-              const hit    = s.acertou === null ? '● Neutro — não avaliado'
-                           : s.acertou          ? '● Acertou'
-                                                : '● Errou';
+              const s        = sessions[item.dataIndex];
+              const dir      = s.variacao_pts >= 0 ? '▲ Alta' : '▼ Baixa';
+              const result   = `${dir}  ${s.variacao_pts >= 0 ? '+' : ''}${s.variacao_pts} pts`;
+              const prev     = `${s.sinal_previsto}  (${s.confianca_previsao}% confiança)`;
+              const thresh   = getConvMinima();
+              const filtered = s.sinal_previsto !== 'NEUTRO' && (s.confianca_previsao ?? 0) < thresh;
+              const hit      = filtered                ? `● Filtrado — ${s.confianca_previsao}% < ${thresh}% mínimo`
+                             : s.acertou === null      ? '● Neutro — não avaliado'
+                             : s.acertou               ? '● Acertou'
+                                                       : '● Errou';
+              const janela = s.hora_entrada && s.hora_saida
+                ? ` Janela:   ${s.hora_entrada} → ${s.hora_saida} BRT` : '';
+              const precos = `  ${s.abertura_pts} → ${s.fechamento_pts} pts`;
               return [
                 ` Mercado:  ${result}`,
+                ` Preços:  ${precos}`,
+                janela,
                 ` Previsto: ${prev}`,
                 ` Sistema:  ${hit}`,
-              ];
+              ].filter(Boolean);
             }
           }
         }
