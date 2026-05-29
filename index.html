@@ -352,9 +352,10 @@
         <div class="sim-row">
           <div class="field">
             <label>Entrada (pts)
-              <button onclick="usarPrecoAtual()" style="margin-left:6px;padding:1px 7px;font-size:10px;border-radius:4px;border:1px solid var(--blue);background:transparent;color:var(--blue);cursor:pointer;font-family:var(--font);">↻ Atual</button>
+              <span id="entrada-live-badge" style="display:none;margin-left:6px;font-size:9px;color:var(--blue);">● AO VIVO</span>
+              <button onclick="usarPrecoAtual()" style="margin-left:6px;padding:1px 7px;font-size:10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font);">↻ Manual</button>
             </label>
-            <input type="number" id="wdo-entry" placeholder="ex: 5.835,00" step="0.5" oninput="recalcularDaEntrada()">
+            <input type="number" id="wdo-entry" placeholder="ex: 5.835,00" step="0.5" oninput="onEntradaManual()">
           </div>
           <div class="field">
             <label>Saída (pts)</label>
@@ -703,6 +704,12 @@ function renderTicker() {
   // Atualiza preço de entrada ao vivo no plano operacional
   const planoLive = document.getElementById('plano-entrada-live');
   if (planoLive) planoLive.textContent = fmt(price, 1);
+
+  // Mantém campo de entrada sincronizado se modo auto estiver ativo
+  if (autoEntrada && !posicao) {
+    document.getElementById('wdo-entry').value = price;
+    recalcularDaEntrada();
+  }
 }
 
 function renderLatency() {
@@ -752,6 +759,22 @@ function calcSim() {
 // ── Monitor de Posição Aberta ─────────────────────────────────────────────────
 let posicao = null;
 let posTimer = null;
+
+// flag: true = entrada segue o ticker automaticamente
+let autoEntrada = false;
+
+function setAutoEntrada(on) {
+  autoEntrada = on;
+  const badge  = document.getElementById('entrada-live-badge');
+  const entryEl = document.getElementById('wdo-entry');
+  if (badge) badge.style.display = on ? 'inline' : 'none';
+  if (entryEl) entryEl.style.borderColor = on ? 'var(--blue)' : '';
+}
+
+function onEntradaManual() {
+  setAutoEntrada(false);   // usuário digitou → para o auto
+  recalcularDaEntrada();
+}
 
 function usarPrecoAtual() {
   if (tickerState.price == null) { alert('Aguarde o ticker carregar.'); return; }
@@ -804,6 +827,7 @@ function abrirPosicao() {
   const alvo2Pts = plano.alvo2_pts || stopPts * 2.5;
   const now      = new Date();
 
+  setAutoEntrada(false);  // para o auto ao abrir posição — entrada fixada
   posicao = {
     dir, qty, entry,
     stop:  dir === 'C' ? entry - stopPts  : entry + stopPts,
@@ -906,6 +930,7 @@ function aceitarEstrategia(alvo) {
   if (!lastSignal || !lastSignal.plano) return;
   const p    = lastSignal.plano;
   const bias = lastSignal.bias;
+  setAutoEntrada(true);   // ativa modo ao vivo
   if (!p.entrada_nivel) return;
 
   const dir      = bias === 'ALTA' ? 'C' : 'V';
