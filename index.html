@@ -567,37 +567,36 @@ async function loadChart() {
     const data = await res.json();
     const days = data.slice().reverse();
 
-    const labels = days.map(d => {
+    const labels  = days.map(d => {
       const date = new Date(parseInt(d.timestamp) * 1000);
       return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
     });
-    const prices = days.map(d => parseFloat(d.bid));
+    const changes = days.map(d => parseFloat(d.pctChange));
+    const prices  = days.map(d => parseFloat(d.bid));
 
-    const first = prices[0], last = prices[prices.length - 1];
-    const up    = last >= first;
-    const color = up ? '#3fb950' : '#f85149';
-    const pct   = ((last - first) / first * 100);
+    const colors     = changes.map(v => v >= 0 ? '#3fb950' : '#f85149');
+    const colorsFade = changes.map(v => v >= 0 ? '#3fb95066' : '#f8514966');
 
-    document.getElementById('chart-trend').textContent =
-      (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-    document.getElementById('chart-trend').style.color = color;
+    // Badge de tendência: soma dos últimos 5 dias
+    const last5 = changes.slice(-5).reduce((a, b) => a + b, 0);
+    const trendColor = last5 >= 0 ? '#3fb950' : '#f85149';
+    const altas  = changes.filter(v => v > 0).length;
+    const baixas = changes.filter(v => v < 0).length;
+    document.getElementById('chart-trend').innerHTML =
+      `<span style="color:#3fb950;">▲ ${altas}d</span> <span style="color:#8b949e;">·</span> <span style="color:#f85149;">▼ ${baixas}d</span> <span style="color:${trendColor};margin-left:6px;">${last5 >= 0 ? '+' : ''}${last5.toFixed(2)}% (5d)</span>`;
 
     const ctx = document.getElementById('priceChart').getContext('2d');
     if (priceChart) priceChart.destroy();
     priceChart = new Chart(ctx, {
-      type: 'line',
+      type: 'bar',
       data: {
         labels,
         datasets: [{
-          data: prices,
-          borderColor: color,
-          backgroundColor: color + '18',
-          borderWidth: 2,
-          pointRadius: 2,
-          pointHoverRadius: 5,
-          pointBackgroundColor: color,
-          tension: 0.35,
-          fill: true,
+          data: changes,
+          backgroundColor: colorsFade,
+          borderColor: colors,
+          borderWidth: 1.5,
+          borderRadius: 3,
         }]
       },
       options: {
@@ -612,18 +611,29 @@ async function loadChart() {
             borderWidth: 1,
             titleColor: '#8b949e',
             bodyColor: '#e6edf3',
-            callbacks: { label: ctx => ' USD/BRL ' + ctx.parsed.y.toFixed(4) }
+            callbacks: {
+              label: ctx => {
+                const v = ctx.parsed.y;
+                const p = prices[ctx.dataIndex];
+                return ` ${v >= 0 ? '▲ Alta' : '▼ Baixa'} ${v >= 0 ? '+' : ''}${v.toFixed(2)}%  ·  USD/BRL ${p.toFixed(4)}`;
+              }
+            }
           }
         },
         scales: {
           x: {
-            grid: { color: '#30363d55' },
+            grid: { display: false },
             ticks: { color: '#8b949e', font: { size: 10, family: 'SF Mono, Fira Code, monospace' }, maxRotation: 0 }
           },
           y: {
             position: 'right',
-            grid: { color: '#30363d55' },
-            ticks: { color: '#8b949e', font: { size: 10, family: 'SF Mono, Fira Code, monospace' }, callback: v => v.toFixed(2) }
+            grid: { color: '#30363d44', drawBorder: false },
+            border: { dash: [3, 3] },
+            ticks: {
+              color: '#8b949e',
+              font: { size: 10, family: 'SF Mono, Fira Code, monospace' },
+              callback: v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%'
+            }
           }
         }
       }
