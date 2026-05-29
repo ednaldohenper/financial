@@ -772,7 +772,7 @@ function abrirPosicao() {
   document.getElementById('pos-alvo1').textContent      = fmt(posicao.alvo1, 1);
   document.getElementById('pos-alvo2').textContent      = fmt(posicao.alvo2, 1);
 
-  posicao.card.scrollIntoView && document.getElementById('posicao-card').scrollIntoView({ behavior:'smooth', block:'center' });
+  document.getElementById('posicao-card').scrollIntoView({ behavior:'smooth', block:'center' });
   atualizarPosicao();
   if (posTimer) clearInterval(posTimer);
   posTimer = setInterval(atualizarPosicao, 5000);
