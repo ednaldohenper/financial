@@ -189,6 +189,27 @@
     </div>
   </div>
 
+  <!-- ── BACKTEST ─────────────────────────────────────────────── -->
+  <div class="card" style="padding:14px 18px;">
+    <div class="card-title" style="margin-bottom:12px;">
+      <span>Backtest — Abertura 9h–9h30 · Últimos 10 Pregões</span>
+      <div style="display:flex;gap:14px;align-items:center;">
+        <span id="bt-accuracy" style="font-size:13px;font-weight:700;">—</span>
+        <span id="bt-hits"   style="font-size:11px;color:var(--green);">—</span>
+        <span id="bt-misses" style="font-size:11px;color:var(--red);">—</span>
+      </div>
+    </div>
+    <div style="position:relative;height:110px;">
+      <canvas id="backtestChart"></canvas>
+    </div>
+    <div style="display:flex;gap:18px;margin-top:10px;font-size:10px;color:var(--muted);flex-wrap:wrap;">
+      <span><span style="display:inline-block;width:9px;height:9px;background:#3fb950;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Alta · previsão correta</span>
+      <span><span style="display:inline-block;width:9px;height:9px;background:#f85149;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Baixa · previsão correta</span>
+      <span><span style="display:inline-block;width:9px;height:9px;background:#e3b341;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Previsão errada</span>
+      <span><span style="display:inline-block;width:9px;height:9px;background:#8b949e55;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Sinal neutro</span>
+    </div>
+  </div>
+
   <!-- ── SINAL DA IA ──────────────────────────────────────────── -->
   <div id="signal-card" class="signal-card NEUTRO">
     <div class="card-title" style="margin-bottom:0;">
@@ -559,6 +580,113 @@ function calcRisk() {
   document.getElementById('risk-daily-max').textContent = fmtBRL(dailyMax);
 }
 
+// ── Backtest ──────────────────────────────────────────────────────────────────
+let backtestChart = null;
+
+async function loadBacktest() {
+  try {
+    const res = await fetch('backtest.json?t=' + Date.now());
+    if (!res.ok) throw new Error('backtest.json não encontrado');
+    const data = await res.json();
+    if (data.sessions && data.sessions.length) renderBacktest(data);
+  } catch(e) {
+    console.error('Backtest:', e);
+  }
+}
+
+function renderBacktest(data) {
+  const sessions = data.sessions;
+
+  const labels  = sessions.map(s => s.data_fmt);
+  const values  = sessions.map(s => s.variacao_pts);
+
+  // Cor por resultado + acerto
+  const bgColors = sessions.map(s => {
+    if (s.acertou === null) return '#8b949e33';
+    if (s.acertou) return s.resultado === 'ALTA' ? '#3fb95066' : '#f8514966';
+    return '#e3b34166';
+  });
+  const borderColors = sessions.map(s => {
+    if (s.acertou === null) return '#8b949e';
+    if (s.acertou) return s.resultado === 'ALTA' ? '#3fb950' : '#f85149';
+    return '#e3b341';
+  });
+
+  // Stats
+  const acc = data.acuracia_pct;
+  const accColor = acc >= 65 ? '#3fb950' : acc >= 45 ? '#e3b341' : '#f85149';
+  document.getElementById('bt-accuracy').innerHTML =
+    `<span style="color:${accColor};">Acurácia: ${acc}%</span>`;
+  document.getElementById('bt-hits').textContent   = `✓ ${data.acertos} acertos`;
+  document.getElementById('bt-misses').textContent = `✗ ${data.erros} erros`;
+
+  const ctx = document.getElementById('backtestChart').getContext('2d');
+  if (backtestChart) backtestChart.destroy();
+  backtestChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: bgColors,
+        borderColor: borderColors,
+        borderWidth: 2,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 400 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#21262d',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          titleColor: '#8b949e',
+          bodyColor: '#e6edf3',
+          padding: 10,
+          callbacks: {
+            title: items => {
+              const s = sessions[items[0].dataIndex];
+              return `${s.data_fmt}  (${s.data})`;
+            },
+            label: item => {
+              const s = sessions[item.dataIndex];
+              const dir    = s.variacao_pts >= 0 ? '▲ Alta' : '▼ Baixa';
+              const hit    = s.acertou === null ? '— sinal neutro'
+                           : s.acertou ? '✓ Previsão correta' : '✗ Previsão errada';
+              const signal = `${s.sinal_previsto} (${s.confianca_previsao}% confiança)`;
+              return [
+                ` Resultado: ${dir}  ${s.variacao_pts >= 0 ? '+' : ''}${s.variacao_pts} pts`,
+                ` Previsto:  ${signal}`,
+                ` ${hit}`,
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#8b949e', font: { size: 10, family: 'SF Mono, Fira Code, monospace' }, maxRotation: 0 }
+        },
+        y: {
+          position: 'right',
+          grid: { color: '#30363d44' },
+          border: { dash: [3, 3] },
+          ticks: {
+            color: '#8b949e',
+            font: { size: 10, family: 'SF Mono, Fira Code, monospace' },
+            callback: v => (v >= 0 ? '+' : '') + v + ' pts'
+          }
+        }
+      }
+    }
+  });
+}
+
 // ── Gráfico histórico ─────────────────────────────────────────────────────────
 let priceChart = null;
 async function loadChart() {
@@ -647,6 +775,7 @@ async function loadChart() {
 loadSaved();
 renderLog();
 loadSignal();
+loadBacktest();
 loadChart();
 // Atualiza gráfico a cada 30 minutos
 setInterval(loadChart, 30 * 60 * 1000);
