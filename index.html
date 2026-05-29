@@ -204,8 +204,8 @@
   <!-- ── TICKER AO VIVO ─────────────────────────────────────── -->
   <div class="card">
     <div class="card-title">
-      <span>WDO — Preço ao Vivo · <span id="wdo-contract" style="color:var(--purple);">—</span></span>
-      <span id="live-badge" style="font-size:10px;color:var(--muted);">configure token abaixo</span>
+      <span>USD/BRL — Referência WDO · <span id="wdo-contract" style="color:var(--purple);">spot</span></span>
+      <span id="live-badge" style="font-size:10px;color:var(--muted);">conectando...</span>
     </div>
     <div class="latency-bar">
       <span class="latency-dot fresh" id="lat-dot"></span>
@@ -225,30 +225,6 @@
     </div>
   </div>
 
-  <!-- ── API CONFIG ──────────────────────────────────────────── -->
-  <div class="card">
-    <div class="card-title">Conexão brapi.dev — Preço ao Vivo</div>
-    <div class="api-row">
-      <div class="field" style="flex:3;">
-        <label>Token brapi.dev</label>
-        <input type="password" id="api-token" placeholder="Cole seu token (gratuito em brapi.dev)" oninput="saveToken()">
-      </div>
-      <div class="field">
-        <label>Contrato</label>
-        <input type="text" id="api-contract" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
-      </div>
-      <div class="field">
-        <label>Intervalo</label>
-        <select id="api-interval">
-          <option value="15">15s</option>
-          <option value="30" selected>30s</option>
-          <option value="60">60s</option>
-        </select>
-      </div>
-      <div><button class="btn btn-primary" onclick="startLive()">Conectar</button></div>
-    </div>
-    <div class="api-status idle" id="api-status">Configure o token para ativar preço ao vivo.</div>
-  </div>
 
   <!-- ── SIMULAÇÃO + RISCO ───────────────────────────────────── -->
   <div class="grid-2">
@@ -444,43 +420,37 @@ function renderMarketData(md) {
   }).join('');
 }
 
-// ── Ticker ao vivo (brapi.dev) ────────────────────────────────────────────────
-const tickerState = { price:null, open:null, high:null, low:null, change:null, changePct:null, lastUpdate:null, timer:null, interval:30, left:30 };
-
-function autoContract() {
-  const codes = 'FGHJKMNQUVXZ'.split('');
-  const now = new Date(); let m = now.getMonth(), y = now.getFullYear() % 100;
-  if (now.getDate() > 10) { m++; if (m > 11) { m = 0; y++; } }
-  return 'WDO' + codes[m] + String(y).padStart(2,'0');
-}
-
-async function fetchLive(contract, token) {
-  const res = await fetch(`https://brapi.dev/api/quote/${contract}?token=${token}&fundamental=false`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  const q = data?.results?.[0];
-  if (!q?.regularMarketPrice) throw new Error('Sem dados para ' + contract);
-  return { price: q.regularMarketPrice, open: q.regularMarketOpen??q.regularMarketPrice, high: q.regularMarketDayHigh??q.regularMarketPrice, low: q.regularMarketDayLow??q.regularMarketPrice, change: q.regularMarketChange??0, changePct: q.regularMarketChangePercent??0 };
-}
+// ── Ticker ao vivo (awesomeapi.com.br — sem token) ───────────────────────────
+// USD/BRL spot × 1000 ≈ pontos WDO futuro
+const tickerState = { price:null, open:null, high:null, low:null, change:null, changePct:null, lastUpdate:null, timer:null, interval:15, left:15 };
 
 async function refreshLive() {
-  const token    = document.getElementById('api-token').value.trim();
-  const contract = document.getElementById('api-contract').value.trim() || autoContract();
-  document.getElementById('wdo-contract').textContent = contract;
-  const statusEl = document.getElementById('api-status');
   try {
-    const q = await fetchLive(contract, token);
-    Object.assign(tickerState, q, { lastUpdate: new Date() });
+    const res  = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const q    = data['USDBRL'];
+    if (!q) throw new Error('Sem dados USD-BRL');
+
+    // Converte taxa para pontos WDO (× 1000, arredonda para 0,5)
+    const toPoints = v => Math.round(parseFloat(v) * 1000 * 2) / 2;
+
+    const price  = toPoints(q.bid);
+    const high   = toPoints(q.high);
+    const low    = toPoints(q.low);
+    const change = parseFloat(q.varBid) * 1000;
+    const open   = Math.round((price - change) * 2) / 2;
+    const changePct = parseFloat(q.pctChange);
+
+    Object.assign(tickerState, { price, open, high, low, change, changePct, lastUpdate: new Date() });
     renderTicker();
-    statusEl.textContent = `Conectado — ${contract} — ${tickerState.lastUpdate.toLocaleTimeString('pt-BR')}`;
-    statusEl.className = 'api-status ok';
     document.getElementById('live-badge').textContent = 'AO VIVO';
     document.getElementById('live-badge').style.color = 'var(--green)';
     document.getElementById('refresh-dot').style.background = 'var(--green)';
     document.getElementById('refresh-label').textContent = 'Próxima atualização:';
   } catch(e) {
-    statusEl.textContent = `Erro: ${e.message}`;
-    statusEl.className = 'api-status err';
+    document.getElementById('live-badge').textContent = 'Erro: ' + e.message;
+    document.getElementById('live-badge').style.color = 'var(--red)';
   }
 }
 
@@ -488,13 +458,13 @@ function renderTicker() {
   const { price, open, high, low, change, changePct } = tickerState;
   if (price == null) return;
   const dir = change >= 0;
-  document.getElementById('wdo-price').textContent  = fmt(price);
+  document.getElementById('wdo-price').textContent  = fmt(price, 1);
   document.getElementById('wdo-price').className    = 'ticker-price ' + (dir?'up':'down');
-  document.getElementById('wdo-change').textContent = `${dir?'▲':'▼'} ${dir?'+':''}${fmt(change)} (${dir?'+':''}${fmt(changePct)}%)`;
+  document.getElementById('wdo-change').textContent = `${dir?'▲':'▼'} ${dir?'+':''}${fmt(change,1)} pts (${dir?'+':''}${fmt(changePct)}%)`;
   document.getElementById('wdo-change').className   = 'ticker-change ' + (dir?'up':'down');
-  document.getElementById('wdo-open').textContent   = fmt(open);
-  document.getElementById('wdo-high').textContent   = fmt(high);
-  document.getElementById('wdo-low').textContent    = fmt(low);
+  document.getElementById('wdo-open').textContent   = fmt(open, 1);
+  document.getElementById('wdo-high').textContent   = fmt(high, 1);
+  document.getElementById('wdo-low').textContent    = fmt(low, 1);
 }
 
 function renderLatency() {
@@ -524,7 +494,6 @@ function startLive() {
 }
 
 // ── Persistência ──────────────────────────────────────────────────────────────
-function saveToken() { localStorage.setItem('wdo_token', document.getElementById('api-token').value); }
 function saveRisk()  {
   localStorage.setItem('wdo_risk', JSON.stringify({
     capital: document.getElementById('risk-capital').value,
@@ -534,8 +503,6 @@ function saveRisk()  {
   }));
 }
 function loadSaved() {
-  const token = localStorage.getItem('wdo_token');
-  if (token) document.getElementById('api-token').value = token;
   const risk = JSON.parse(localStorage.getItem('wdo_risk')||'null');
   if (risk) {
     document.getElementById('risk-capital').value   = risk.capital;
@@ -543,7 +510,6 @@ function loadSaved() {
     document.getElementById('risk-stop').value      = risk.stop;
     document.getElementById('risk-daily-pct').value = risk.daily;
   }
-  document.getElementById('api-contract').placeholder = autoContract();
   calcRisk();
 }
 
@@ -604,6 +570,16 @@ function calcRisk() {
 loadSaved();
 renderLog();
 loadSignal();
+
+// Ticker USD/BRL — inicia automático, sem token
+refreshLive();
+tickerState.timer = setInterval(() => {
+  tickerState.left--;
+  document.getElementById('prog').style.width = (tickerState.left / tickerState.interval * 100) + '%';
+  document.getElementById('next-refresh').textContent = tickerState.left + 's';
+  if (tickerState.left <= 0) { refreshLive(); tickerState.left = tickerState.interval; }
+}, 1000);
+
 // Recarrega o sinal a cada 5 minutos (para pegar atualizações do GitHub Actions)
 setInterval(loadSignal, 5 * 60 * 1000);
 </script>
