@@ -1,33 +1,44 @@
 {
   "bias": "ALTA",
-  "confianca": 68,
-  "resumo": "Sinais mistos com leve viés altista sustentado por dólar forte (DXY estável, EUR/USD em alta) e contexto de risk-off (ouro +1.96%). USD/BRL em queda técnica pressiona contra, mas correlação histórica DXY positiva (~0.85) é fator dominante hoje.",
-  "fator_principal": "DXY estável + EUR/USD subindo + Ouro em alta = ambiente de dólar forte com segurança de risco",
+  "confianca": 72,
+  "resumo": "Ambiente de risk-off global com ouro em forte alta (+2.04%) e dólar resiliente apesar de leve queda do DXY. USD/BRL spot em 5.0443 reforça pressão compradora no WDO. Expectativa: dólar forte e WDO em tendência altista, especialmente na abertura e na janela NY.",
+  "fator_principal": "Risk-off + Ouro acelerado (+2.04%) sinalizando busca por segurança e fortalecimento do dólar americano",
   "fatores_favor": [
-    "DXY praticamente estável (-0.11%), mantendo força estrutural",
-    "Ouro acelerado (+1.96%) sinaliza risk-off que historicamente favorece WDO",
-    "S&P Futures com ganho modesto (+0.06%) sem reversão agressiva"
+    "Ouro em forte alta (+2.04%) — indicador clássico de busca por segurança e dólar forte",
+    "USD/BRL spot em 5.0443 após queda de -0.56% — suporte elevado para WDO em níveis altos",
+    "S&P 500 Futures positivo (+0.2%) mas Nasdaq vagaroso — mixed sentiment favorece dólar defensivo",
+    "DXY em queda pequena (-0.15%) — consolidação antes de potencial aceleração altista"
   ],
   "fatores_contra": [
-    "USD/BRL em queda -0.52% (5.0463), pressionando WDO diretamente",
-    "EUR/USD subindo (+0.42%) correlaciona negativamente com WDO",
-    "Petróleo WTI em queda (-1.79%), reduz suporte ao real via pauta exportadora"
+    "EUR/USD subindo (+0.42%) — correlação negativa com WDO, pressão vendedora",
+    "Petróleo em queda (-1.97%) — enfraquece BRL, desfavorável para WDO",
+    "DXY em leve queda — sinalizador de fraqueza dólar a curto prazo",
+    "Nikkei em queda (-0.47%) — sinal fraco de risco global"
   ],
   "zonas_sugeridas": {
-    "resistencia2": 5100,
-    "resistencia1": 5080,
-    "suporte1": 5040,
-    "suporte2": 5000
+    "resistencia2": 5135,
+    "resistencia1": 5110,
+    "suporte1": 5055,
+    "suporte2": 5020
+  },
+  "plano": {
+    "entrada_condicao": "Rompimento acima de 5110 com confirmação de volume na abertura (09:10–10:00) OU reteste de 5055 com candle de reversão altista em contexto de risco-off mantido",
+    "entrada_nivel": 5110,
+    "entrada_janela": "09:10–10:30 BRT (melhor janela, definição de tendência diária)",
+    "stop_pts": 20,
+    "alvo1_pts": 30,
+    "alvo2_pts": 50,
+    "cancelar_se": "EUR/USD continuar acelerando para cima (>1.1750) ou WDO quebrar suporte em 5055 com fechamento abaixo — nesse caso, inverter para venda"
   },
   "validade": "manha",
-  "alerta": "Conflito moderado entre força do dólar global (favorável WDO) e enfraquecimento USD/BRL spot (desfavorável). Confirmação de abertura em alta ou rompimento de suporte será definidor. Monitorar comunicado do Fed/Banco Central.",
+  "alerta": "Conflito moderado: ouro forte e risk-off favorecem alta, mas DXY em queda e EUR/USD subindo criam incerteza. Recomenda-se aguardar confirmação na abertura antes de operar. Volatilidade pode ser elevada à abertura de NY (14:30 BRT) — considerar ajuste de stops nesse horário.",
   "contrato": "WDOM26",
-  "gerado_em": "2026-05-29T15:24:47.858058-03:00",
+  "gerado_em": "2026-05-29T15:50:36.300486-03:00",
   "market_data": {
     "DXY": {
       "label": "DXY — Índice do Dólar",
-      "price": 98.913,
-      "change_pct": -0.11
+      "price": 98.874,
+      "change_pct": -0.15
     },
     "EURUSD": {
       "label": "EUR/USD",
@@ -36,23 +47,23 @@
     },
     "SP500F": {
       "label": "S&P 500 Futures",
-      "price": 7586.5,
-      "change_pct": 0.06
+      "price": 7597.25,
+      "change_pct": 0.2
     },
     "NASDAQF": {
       "label": "Nasdaq Futures",
-      "price": 30337.75,
-      "change_pct": 0.1
+      "price": 30383.0,
+      "change_pct": 0.25
     },
     "OURO": {
       "label": "Ouro (XAU/USD)",
-      "price": 4587.3999,
-      "change_pct": 1.96
+      "price": 4591.0,
+      "change_pct": 2.04
     },
     "PETROLEO": {
       "label": "Petróleo WTI",
-      "price": 87.31,
-      "change_pct": -1.79
+      "price": 87.15,
+      "change_pct": -1.97
     },
     "NIKKEI": {
       "label": "Nikkei 225",
@@ -66,9 +77,9 @@
     },
     "USDBRL": {
       "label": "USD/BRL spot",
-      "price": 5.0463,
-      "change_pct": -0.52
+      "price": 5.0443,
+      "change_pct": -0.56
     }
   },
-  "tokens_usados": 1355
+  "tokens_usados": 2101
 }

@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-05-29T15:24:49.011285-03:00",
+  "gerado_em": "2026-05-29T15:50:37.382700-03:00",
   "pregoes_analisados": 15,
   "acuracia_pct": 33,
   "acertos": 3,
@@ -307,7 +307,7 @@
       "variacao_pct": -0.04,
       "resultado": "BAIXA",
       "sinal_previsto": "ALTA",
-      "confianca_previsao": 68,
+      "confianca_previsao": 72,
       "acertou": false,
       "fonte_sinal": "claude",
       "indicadores": {
