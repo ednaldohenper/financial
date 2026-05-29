@@ -316,6 +316,11 @@
           <button class="btn btn-clear" onclick="clearSim()">Limpar</button>
           <button class="btn btn-buy" style="margin-left:auto;" onclick="addTrade()">+ Registrar</button>
         </div>
+        <div id="sim-stop-bar" style="display:none;background:var(--surface2);border:1px solid #f8514933;border-radius:8px;padding:10px 14px;font-size:12px;">
+          <span style="color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-size:10px;">Stop em: </span>
+          <span id="sim-stop-val" class="down" style="font-weight:700;font-size:14px;"></span>
+          <span style="color:var(--muted);font-size:11px;margin-left:8px;" id="sim-stop-dist"></span>
+        </div>
         <div class="pnl-box" id="wdo-pnl-box">
           <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Resultado estimado</div>
           <div class="pnl-value" id="wdo-pnl-value"></div>
@@ -564,7 +569,17 @@ function renderPlano(s) {
         <div class="plano-sub">+R$${fmt(alvo2_brl,0)} potencial</div>
       </div>
     </div>
-    ${p.cancelar_se ? `<div class="plano-cancelar">⚠ Cancelar se: ${p.cancelar_se}</div>` : ''}`;
+    ${p.cancelar_se ? `<div class="plano-cancelar">⚠ Cancelar se: ${p.cancelar_se}</div>` : ''}
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-buy" style="flex:1;padding:10px;font-size:13px;"
+        onclick="aceitarEstrategia('alvo1')">
+        ✓ Aceitar — Alvo 1 (+${p.alvo1_pts} pts · RR ${rr1}:1)
+      </button>
+      <button class="btn" style="flex:1;padding:10px;font-size:13px;background:var(--surface2);border:1px solid var(--border);color:var(--text);"
+        onclick="aceitarEstrategia('alvo2')">
+        Alvo 2 (+${p.alvo2_pts} pts · RR ${rr2}:1)
+      </button>
+    </div>`;
 }
 
 function renderMarketData(md) {
@@ -677,7 +692,46 @@ function calcSim() {
   val.textContent = fmtBRL(pnl); val.className = 'pnl-value '+(pnl>=0?'up':'down');
   document.getElementById('wdo-pnl-detail').textContent = `${fmt(Math.abs(pts),1)} pts · ${Math.abs(Math.round(pts/0.5))} ticks · ${qty} contrato(s) · ${dir==='C'?'Compra':'Venda'}`;
 }
-function clearSim() { document.getElementById('wdo-entry').value=''; document.getElementById('wdo-exit').value=''; document.getElementById('wdo-pnl-box').classList.remove('show'); }
+function aceitarEstrategia(alvo) {
+  if (!lastSignal || !lastSignal.plano) return;
+  const p    = lastSignal.plano;
+  const bias = lastSignal.bias;
+  if (!p.entrada_nivel) return;
+
+  const dir      = bias === 'ALTA' ? 'C' : 'V';
+  const entrada  = p.entrada_nivel;
+  const alvoPts  = alvo === 'alvo2' ? (p.alvo2_pts || p.alvo1_pts) : p.alvo1_pts;
+  const stopPts  = p.stop_pts || 20;
+  const saida    = dir === 'C' ? entrada + alvoPts : entrada - alvoPts;
+  const stopNivel = dir === 'C' ? entrada - stopPts : entrada + stopPts;
+
+  const capital  = parseFloat(document.getElementById('risk-capital').value) || 10000;
+  const riskPct  = parseFloat(document.getElementById('risk-pct').value)     || 1;
+  const contratos = Math.max(1, Math.floor((capital * riskPct / 100) / (stopPts * 10)));
+
+  document.getElementById('wdo-dir').value   = dir;
+  document.getElementById('wdo-qty').value   = contratos;
+  document.getElementById('wdo-entry').value = entrada;
+  document.getElementById('wdo-exit').value  = saida;
+
+  // Mostra barra de stop
+  const stopBar = document.getElementById('sim-stop-bar');
+  stopBar.style.display = 'block';
+  document.getElementById('sim-stop-val').textContent  = fmt(stopNivel, 1) + ' pts';
+  document.getElementById('sim-stop-dist').textContent = `(−${stopPts} pts · −R$${fmt(stopPts * 10 * contratos, 0)} se atingir)`;
+
+  calcSim();
+
+  // Rola para a simulação
+  document.getElementById('wdo-dir').closest('.card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function clearSim() {
+  document.getElementById('wdo-entry').value='';
+  document.getElementById('wdo-exit').value='';
+  document.getElementById('wdo-pnl-box').classList.remove('show');
+  document.getElementById('sim-stop-bar').style.display = 'none';
+}
 
 // ── Journal ───────────────────────────────────────────────────────────────────
 const journal = { trades:[], pnl:0 };
