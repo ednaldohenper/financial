@@ -34,21 +34,28 @@ jobs:
       - name: Gerar backtest
         run: python backtest.py
 
+      - name: Salvar snapshot de abertura (apenas schedule)
+        if: github.event_name == 'schedule'
+        run: cp signal.json signal_abertura.json
+
       - name: Commit e push
         run: |
           git config user.name  "WDO Signal Bot"
           git config user.email "bot@github-actions"
           # Guarda os arquivos gerados fora do repo
-          cp signal.json  /tmp/signal.json
+          cp signal.json   /tmp/signal.json
           cp backtest.json /tmp/backtest.json
+          [ -f signal_abertura.json ] && cp signal_abertura.json /tmp/signal_abertura.json || true
           # Sincroniza com o estado atual do remote (sem risco de conflito)
           git fetch origin main
           git reset --hard origin/main
           # Restaura os arquivos gerados
-          cp /tmp/signal.json  signal.json
+          cp /tmp/signal.json   signal.json
           cp /tmp/backtest.json backtest.json
+          [ -f /tmp/signal_abertura.json ] && cp /tmp/signal_abertura.json signal_abertura.json || true
           # Commita e envia
           git add signal.json backtest.json
+          [ -f signal_abertura.json ] && git add signal_abertura.json || true
           git diff --staged --quiet && echo "Sem alterações." && exit 0
           git commit -m "sinal+backtest: $(TZ='America/Sao_Paulo' date +'%Y-%m-%d %H:%M') BRT"
           git push origin main

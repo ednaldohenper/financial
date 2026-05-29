@@ -227,7 +227,10 @@
 
   <!-- ── PRÉ-MERCADO ─────────────────────────────────────────── -->
   <div class="card">
-    <div class="card-title">Dados Pré-Mercado</div>
+    <div class="card-title">
+      <span>Snapshot de Abertura — 8h55 BRT</span>
+      <span id="abertura-ts" style="font-size:10px;color:var(--muted);">—</span>
+    </div>
     <div class="market-grid" id="market-grid">
       <div style="color:var(--muted);font-size:12px;">Aguardando sinal...</div>
     </div>
@@ -355,20 +358,43 @@ setInterval(() => {
 }, 1000);
 
 // ── Carregar signal.json ──────────────────────────────────────────────────────
-const MONTH_CODES = list => list; // placeholder
 async function loadSignal() {
   try {
     const res = await fetch('signal.json?t=' + Date.now());
     if (!res.ok) throw new Error('signal.json não encontrado');
     const s = await res.json();
     renderSignal(s);
-    renderMarketData(s.market_data || {});
   } catch (e) {
     document.getElementById('signal-body').innerHTML =
       `<div style="color:var(--muted);text-align:center;padding:24px 0;">
          Sinal não carregado: ${e.message}<br>
          <small>Verifique se está rodando via servidor (não file://)</small>
        </div>`;
+  }
+}
+
+// ── Carregar snapshot de abertura (fixo — só o run das 8h55 grava) ────────────
+async function loadAbertura() {
+  try {
+    const res = await fetch('signal_abertura.json?t=' + Date.now());
+    if (res.ok) {
+      const s = await res.json();
+      renderMarketData(s.market_data || {});
+      const ts = s.gerado_em
+        ? `capturado às ${new Date(s.gerado_em).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})} BRT`
+        : '';
+      document.getElementById('abertura-ts').textContent = ts;
+    } else {
+      // fallback: pega do signal.json enquanto signal_abertura.json não existe
+      const res2 = await fetch('signal.json?t=' + Date.now());
+      if (res2.ok) {
+        const s = await res2.json();
+        renderMarketData(s.market_data || {});
+        document.getElementById('abertura-ts').textContent = 'aguardando run agendado';
+      }
+    }
+  } catch(e) {
+    console.error('Abertura:', e);
   }
 }
 
@@ -837,6 +863,7 @@ async function loadChart() {
 loadSaved();
 renderLog();
 loadSignal();
+loadAbertura();
 loadBacktest();
 loadChart();
 // Atualiza gráfico a cada 30 minutos
