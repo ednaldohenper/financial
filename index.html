@@ -354,7 +354,7 @@
             <label>Entrada (pts)
               <button onclick="usarPrecoAtual()" style="margin-left:6px;padding:1px 7px;font-size:10px;border-radius:4px;border:1px solid var(--blue);background:transparent;color:var(--blue);cursor:pointer;font-family:var(--font);">↻ Atual</button>
             </label>
-            <input type="number" id="wdo-entry" placeholder="ex: 5.835,00" step="0.5">
+            <input type="number" id="wdo-entry" placeholder="ex: 5.835,00" step="0.5" oninput="recalcularDaEntrada()">
           </div>
           <div class="field">
             <label>Saída (pts)</label>
@@ -756,6 +756,32 @@ let posTimer = null;
 function usarPrecoAtual() {
   if (tickerState.price == null) { alert('Aguarde o ticker carregar.'); return; }
   document.getElementById('wdo-entry').value = tickerState.price;
+  recalcularDaEntrada();
+}
+
+function recalcularDaEntrada() {
+  const entry = parseFloat(document.getElementById('wdo-entry').value);
+  if (!entry) return;
+  const dir  = document.getElementById('wdo-dir').value;
+  const qty  = parseFloat(document.getElementById('wdo-qty').value) || 1;
+
+  // Usa as distâncias do plano se disponível, senão usa gestão de risco
+  const p        = lastSignal && lastSignal.plano ? lastSignal.plano : {};
+  const stopPts  = p.stop_pts  || parseFloat(document.getElementById('risk-stop').value) || 20;
+  const alvo1Pts = p.alvo1_pts || stopPts * 1.5;
+
+  const saida     = dir === 'C' ? entry + alvo1Pts : entry - alvo1Pts;
+  const stopNivel = dir === 'C' ? entry - stopPts  : entry + stopPts;
+
+  document.getElementById('wdo-exit').value = saida;
+
+  // Atualiza barra de stop
+  const stopBar = document.getElementById('sim-stop-bar');
+  stopBar.style.display = 'block';
+  document.getElementById('sim-stop-val').textContent  = fmt(stopNivel, 1) + ' pts';
+  document.getElementById('sim-stop-dist').textContent =
+    `(−${stopPts} pts · −R$${fmt(stopPts * 10 * qty, 0)} se atingir)`;
+
   calcSim();
 }
 
