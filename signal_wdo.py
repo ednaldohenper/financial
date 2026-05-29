@@ -5,7 +5,9 @@ Busca dados pré-mercado, analisa via Claude e salva signal.json
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+BRT = timezone(timedelta(hours=-3))
 import yfinance as yf
 from anthropic import Anthropic
 
@@ -27,7 +29,7 @@ SYMBOLS = {
 
 
 def auto_contract():
-    now = datetime.now()
+    now = datetime.now(BRT)
     m = now.month - 1
     y = now.year % 100
     if now.day > 10:
@@ -67,7 +69,7 @@ def fetch_usdbrl_history():
 
 def build_prompt(market_data, history, contract):
     lines = [
-        f"Data/Hora análise: {datetime.now().strftime('%d/%m/%Y %H:%M')} BRT",
+        f"Data/Hora análise: {datetime.now(BRT).strftime('%d/%m/%Y %H:%M')} BRT",
         f"Contrato alvo: {contract}",
         "",
         "DADOS PRÉ-MERCADO (antes da abertura da B3 às 9h BRT):",
@@ -116,7 +118,7 @@ def build_prompt(market_data, history, contract):
 
 def generate_signal():
     contract = auto_contract()
-    log = lambda msg: print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
+    log = lambda msg: print(f"[{datetime.now(BRT).strftime('%H:%M:%S')}] {msg}", flush=True)
 
     log(f"Contrato detectado: {contract}")
     log("Buscando dados pré-mercado...")
@@ -149,7 +151,7 @@ def generate_signal():
         sys.exit(1)
 
     signal["contrato"]      = contract
-    signal["gerado_em"]     = datetime.now().isoformat()
+    signal["gerado_em"]     = datetime.now(BRT).isoformat()
     signal["market_data"]   = market_data
     signal["tokens_usados"] = response.usage.input_tokens + response.usage.output_tokens
 
