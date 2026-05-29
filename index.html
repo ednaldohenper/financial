@@ -199,14 +199,17 @@
         <span id="bt-misses" style="font-size:11px;color:var(--red);">—</span>
       </div>
     </div>
-    <div style="position:relative;height:110px;">
+    <div style="position:relative;height:130px;">
       <canvas id="backtestChart"></canvas>
     </div>
-    <div style="display:flex;gap:18px;margin-top:10px;font-size:10px;color:var(--muted);flex-wrap:wrap;">
-      <span><span style="display:inline-block;width:9px;height:9px;background:#3fb950;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Alta · previsão correta</span>
-      <span><span style="display:inline-block;width:9px;height:9px;background:#f85149;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Baixa · previsão correta</span>
-      <span><span style="display:inline-block;width:9px;height:9px;background:#e3b341;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Previsão errada</span>
-      <span><span style="display:inline-block;width:9px;height:9px;background:#8b949e55;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Sinal neutro</span>
+    <div style="display:flex;gap:20px;margin-top:10px;font-size:10px;color:var(--muted);flex-wrap:wrap;">
+      <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-right:4px;">Barras:</span>
+      <span><span style="display:inline-block;width:9px;height:9px;background:#3fb95066;border:1.5px solid #3fb950;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Alta</span>
+      <span><span style="display:inline-block;width:9px;height:9px;background:#f8514966;border:1.5px solid #f85149;border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Baixa</span>
+      <span style="margin-left:8px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Sistema:</span>
+      <span><span style="display:inline-block;width:9px;height:9px;background:#58a6ff;border-radius:50%;margin-right:4px;vertical-align:middle;"></span>Acertou</span>
+      <span><span style="display:inline-block;width:9px;height:9px;background:#e36209;border-radius:50%;margin-right:4px;vertical-align:middle;"></span>Errou</span>
+      <span><span style="display:inline-block;width:9px;height:9px;background:#8b949e;border-radius:50%;margin-right:4px;vertical-align:middle;"></span>Neutro</span>
     </div>
   </div>
 
@@ -597,23 +600,41 @@ async function loadBacktest() {
 function renderBacktest(data) {
   const sessions = data.sessions;
 
-  const labels  = sessions.map(s => s.data_fmt);
-  const values  = sessions.map(s => s.variacao_pts);
+  const labels = sessions.map(s => s.data_fmt);
+  const values = sessions.map(s => s.variacao_pts);
 
-  // Cor por resultado + acerto
-  const bgColors = sessions.map(s => {
-    if (s.acertou === null) return '#8b949e33';
-    if (s.acertou) return s.resultado === 'ALTA' ? '#3fb95066' : '#f8514966';
-    return '#e3b34166';
-  });
-  const borderColors = sessions.map(s => {
-    if (s.acertou === null) return '#8b949e';
-    if (s.acertou) return s.resultado === 'ALTA' ? '#3fb950' : '#f85149';
-    return '#e3b341';
-  });
+  // Barras: cor = direção do mercado (independente de acerto)
+  const barBg     = sessions.map(s => s.resultado === 'ALTA' ? '#3fb95055' : s.resultado === 'BAIXA' ? '#f8514955' : '#8b949e33');
+  const barBorder = sessions.map(s => s.resultado === 'ALTA' ? '#3fb950'   : s.resultado === 'BAIXA' ? '#f85149'   : '#8b949e');
 
-  // Stats
-  const acc = data.acuracia_pct;
+  // Pontos de performance: azul=acerto, laranja=erro, cinza=neutro
+  const dotColor = sessions.map(s =>
+    s.acertou === null ? '#8b949e' : s.acertou ? '#58a6ff' : '#e36209'
+  );
+
+  // Plugin que desenha os pontos de performance abaixo do eixo X
+  const perfPlugin = {
+    id: 'perfDots',
+    afterDraw(chart) {
+      const ctx  = chart.ctx;
+      const meta = chart.getDatasetMeta(0);
+      const y    = chart.chartArea.bottom + 16;
+      meta.data.forEach((bar, i) => {
+        const color = dotColor[i];
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(bar.x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle   = color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur  = 10;
+        ctx.fill();
+        ctx.restore();
+      });
+    }
+  };
+
+  // Stats header
+  const acc      = data.acuracia_pct;
   const accColor = acc >= 65 ? '#3fb950' : acc >= 45 ? '#e3b341' : '#f85149';
   document.getElementById('bt-accuracy').innerHTML =
     `<span style="color:${accColor};">Acurácia: ${acc}%</span>`;
@@ -627,41 +648,45 @@ function renderBacktest(data) {
     data: {
       labels,
       datasets: [{
-        data: values,
-        backgroundColor: bgColors,
-        borderColor: borderColors,
-        borderWidth: 2,
-        borderRadius: 4,
+        data:            values,
+        backgroundColor: barBg,
+        borderColor:     barBorder,
+        borderWidth:     1.5,
+        borderRadius:    4,
       }]
     },
+    plugins: [perfPlugin],
     options: {
       responsive: true,
       maintainAspectRatio: false,
       animation: { duration: 400 },
+      layout: { padding: { bottom: 22 } },
       plugins: {
         legend: { display: false },
         tooltip: {
           backgroundColor: '#21262d',
-          borderColor: '#30363d',
-          borderWidth: 1,
-          titleColor: '#8b949e',
-          bodyColor: '#e6edf3',
-          padding: 10,
+          borderColor:     '#30363d',
+          borderWidth:     1,
+          titleColor:      '#8b949e',
+          bodyColor:       '#e6edf3',
+          padding:         10,
           callbacks: {
             title: items => {
               const s = sessions[items[0].dataIndex];
-              return `${s.data_fmt}  (${s.data})`;
+              return `${s.data_fmt}  —  ${s.data}`;
             },
             label: item => {
-              const s = sessions[item.dataIndex];
+              const s      = sessions[item.dataIndex];
               const dir    = s.variacao_pts >= 0 ? '▲ Alta' : '▼ Baixa';
-              const hit    = s.acertou === null ? '— sinal neutro'
-                           : s.acertou ? '✓ Previsão correta' : '✗ Previsão errada';
-              const signal = `${s.sinal_previsto} (${s.confianca_previsao}% confiança)`;
+              const result = `${dir}  ${s.variacao_pts >= 0 ? '+' : ''}${s.variacao_pts} pts`;
+              const prev   = `${s.sinal_previsto}  (${s.confianca_previsao}% confiança)`;
+              const hit    = s.acertou === null ? '● Neutro — não avaliado'
+                           : s.acertou          ? '● Acertou'
+                                                : '● Errou';
               return [
-                ` Resultado: ${dir}  ${s.variacao_pts >= 0 ? '+' : ''}${s.variacao_pts} pts`,
-                ` Previsto:  ${signal}`,
-                ` ${hit}`,
+                ` Mercado:  ${result}`,
+                ` Previsto: ${prev}`,
+                ` Sistema:  ${hit}`,
               ];
             }
           }
