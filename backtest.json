@@ -1,10 +1,100 @@
 {
-  "gerado_em": "2026-05-29T14:23:10.114846-03:00",
-  "pregoes_analisados": 10,
-  "acuracia_pct": 40,
-  "acertos": 2,
-  "erros": 3,
+  "gerado_em": "2026-05-29T14:56:42.400847-03:00",
+  "pregoes_analisados": 15,
+  "acuracia_pct": 38,
+  "acertos": 3,
+  "erros": 5,
   "sessions": [
+    {
+      "data": "2026-05-11",
+      "data_fmt": "11/05",
+      "abertura_pts": 4898.5,
+      "fechamento_pts": 4895.5,
+      "variacao_pts": -3.0,
+      "variacao_pct": -0.061,
+      "resultado": "BAIXA",
+      "sinal_previsto": "NEUTRO",
+      "confianca_previsao": 10,
+      "acertou": null,
+      "indicadores": {
+        "DXY": -0.417,
+        "EURUSD": -0.135,
+        "SP500": 0.761,
+        "OURO": 0.438
+      }
+    },
+    {
+      "data": "2026-05-12",
+      "data_fmt": "12/05",
+      "abertura_pts": 4896.0,
+      "fechamento_pts": 4900.5,
+      "variacao_pts": 4.5,
+      "variacao_pct": 0.092,
+      "resultado": "ALTA",
+      "sinal_previsto": "BAIXA",
+      "confianca_previsao": 30,
+      "acertou": false,
+      "indicadores": {
+        "DXY": 0.102,
+        "EURUSD": 0.318,
+        "SP500": 0.239,
+        "OURO": -0.036
+      }
+    },
+    {
+      "data": "2026-05-13",
+      "data_fmt": "13/05",
+      "abertura_pts": 4894.0,
+      "fechamento_pts": 4909.0,
+      "variacao_pts": 15.0,
+      "variacao_pct": 0.306,
+      "resultado": "ALTA",
+      "sinal_previsto": "NEUTRO",
+      "confianca_previsao": 10,
+      "acertou": null,
+      "indicadores": {
+        "DXY": 0.357,
+        "EURUSD": 0.094,
+        "SP500": -0.138,
+        "OURO": -0.871
+      }
+    },
+    {
+      "data": "2026-05-14",
+      "data_fmt": "14/05",
+      "abertura_pts": 5008.0,
+      "fechamento_pts": 4982.0,
+      "variacao_pts": -26.0,
+      "variacao_pct": -0.519,
+      "resultado": "BAIXA",
+      "sinal_previsto": "ALTA",
+      "confianca_previsao": 40,
+      "acertou": false,
+      "indicadores": {
+        "DXY": 0.193,
+        "EURUSD": -0.378,
+        "SP500": 0.579,
+        "OURO": 0.43
+      }
+    },
+    {
+      "data": "2026-05-15",
+      "data_fmt": "15/05",
+      "abertura_pts": 5023.0,
+      "fechamento_pts": 5041.0,
+      "variacao_pts": 18.0,
+      "variacao_pct": 0.358,
+      "resultado": "ALTA",
+      "sinal_previsto": "ALTA",
+      "confianca_previsao": 20,
+      "acertou": true,
+      "indicadores": {
+        "DXY": 0.406,
+        "EURUSD": -0.165,
+        "SP500": 0.75,
+        "OURO": -0.417
+      }
+    },
     {
       "data": "2026-05-18",
       "data_fmt": "18/05",

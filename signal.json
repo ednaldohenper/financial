@@ -1,60 +1,58 @@
 {
   "bias": "ALTA",
-  "confianca": 72,
-  "resumo": "Dólar em posição defensiva (DXY -0.15%, USD/BRL -0.66%) mas ainda em níveis elevados (5.0394), aliado a ouro em forte alta (+2.14%) indicam risk-off global que historicamente favorece WDO. Petróleo em queda (-2.23%) remove pressão de fortalecimento do real via pauta exportadora.",
-  "fator_principal": "Ambiente de risk-off (ouro +2.14%) com dólar mantendo força estrutural — combinação clássica de suporte para WDO apesar da fraqueza intraday do DXY",
+  "confianca": 62,
+  "resumo": "DXY estável com leve queda (-0.11%) e USD/BRL em recuo (-0.52%) criam pressão altista no WDO, apesar do risco-off parcial. Ouro subindo forte (+1.94%) e petróleo caindo (-2.61%) reforçam cenário de dólar forte, favorável ao contrato.",
+  "fator_principal": "Enfraquecimento do real (USD/BRL -0.52%) combinado com busca por segurança (ouro +1.94%) mantém demanda por dólar elevada",
   "fatores_favor": [
-    "Ouro em forte alta (+2.14%) sinalizando flight-to-safety",
-    "Petróleo em queda (-2.23%) reduzindo potencial de fortalecimento do BRL",
-    "USD/BRL ainda acima de 5.03 — patamar estruturalmente forte",
-    "S&P Futures em leve alta (+0.19%) mantém equilíbrio sem risco-off severo"
+    "Ouro em alta significativa (+1.94%) sinalizando aversão ao risco e fortalecimento do dólar",
+    "USD/BRL caindo — real se fortalecendo localmente, aumentando demanda por hedge em WDO",
+    "Futures de renda variável estáveis (S&P +0.11%, Nikkei -0.47%) sem pressão de venda forte"
   ],
   "fatores_contra": [
-    "DXY cedendo (-0.15%) limita motor de alta tradicional do WDO",
-    "EUR/USD subindo (+0.45%) historicamente correlacionado negativamente",
-    "USD/BRL com queda de -0.66% pré-abertura reduz momentum imediato",
-    "Confiança moderada — sinais parcialmente contraditórios"
+    "DXY com queda leve, sinalizando possível consolidação lateral do dólar",
+    "EUR/USD em alta (+0.42%) contraria correlação positiva esperada com WDO",
+    "Petróleo caindo forte (-2.61%) reduz demanda por BRL de exportadores, neutralizando parte do cenário altista"
   ],
   "zonas_sugeridas": {
-    "resistencia2": 5105,
-    "resistencia1": 5085,
-    "suporte1": 5040,
-    "suporte2": 5010
+    "resistencia2": 5095,
+    "resistencia1": 5065,
+    "suporte1": 5015,
+    "suporte2": 4975
   },
   "validade": "manha",
-  "alerta": "Conflito entre weakness do DXY intraday e strength estrutural do USD/BRL + ouro. Recomenda-se validação na abertura (9h BRT) antes de posicionar com tamanho cheio. Dados de dólar fraco podem reverter rápido em abertura de NY.",
+  "alerta": "Confiança moderada: sinais de alta existem, mas DXY praticamente estável limita força direcional. EUR/USD em contracorrente reduz clareza. Acompanhar abertura B3 e renovação de volatilidade.",
   "contrato": "WDOM26",
-  "gerado_em": "2026-05-29T14:23:09.071047-03:00",
+  "gerado_em": "2026-05-29T14:56:40.814578-03:00",
   "market_data": {
     "DXY": {
       "label": "DXY — Índice do Dólar",
-      "price": 98.871,
-      "change_pct": -0.15
+      "price": 98.91,
+      "change_pct": -0.11
     },
     "EURUSD": {
       "label": "EUR/USD",
-      "price": 1.167,
-      "change_pct": 0.45
+      "price": 1.1667,
+      "change_pct": 0.42
     },
     "SP500F": {
       "label": "S&P 500 Futures",
-      "price": 7596.5,
-      "change_pct": 0.19
+      "price": 7590.25,
+      "change_pct": 0.11
     },
     "NASDAQF": {
       "label": "Nasdaq Futures",
-      "price": 30391.25,
-      "change_pct": 0.28
+      "price": 30339.5,
+      "change_pct": 0.11
     },
     "OURO": {
       "label": "Ouro (XAU/USD)",
-      "price": 4595.6001,
-      "change_pct": 2.14
+      "price": 4586.5,
+      "change_pct": 1.94
     },
     "PETROLEO": {
       "label": "Petróleo WTI",
-      "price": 86.92,
-      "change_pct": -2.23
+      "price": 86.58,
+      "change_pct": -2.61
     },
     "NIKKEI": {
       "label": "Nikkei 225",
@@ -68,9 +66,9 @@
     },
     "USDBRL": {
       "label": "USD/BRL spot",
-      "price": 5.0394,
-      "change_pct": -0.66
+      "price": 5.0467,
+      "change_pct": -0.52
     }
   },
-  "tokens_usados": 1434
+  "tokens_usados": 1397
 }
