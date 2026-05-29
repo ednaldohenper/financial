@@ -663,6 +663,12 @@ function renderPlano(s) {
         <div id="prox-direcao" style="font-size:13px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:6px;border:1px solid var(--border);">—</div>
         <div id="temp-label" style="font-size:14px;font-weight:800;letter-spacing:1px;color:var(--muted);">Aguardando...</div>
       </div>
+      <div style="display:flex;align-items:center;justify-content:center;margin-top:12px;">
+        <button id="btn-auto-disparo" onclick="toggleAutoDisparo()"
+          style="font-size:12px;font-weight:700;padding:6px 18px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;letter-spacing:.5px;transition:all .3s;">
+          🤖 AUTO-ENTRADA: OFF
+        </button>
+      </div>
     </div>
 
     <div style="display:flex;gap:8px;margin-top:14px;">
@@ -804,7 +810,8 @@ let posicao = null;
 let posTimer = null;
 
 // flag: true = entrada segue o ticker automaticamente
-let autoEntrada = false;
+let autoEntrada  = false;
+let autoDisparo  = false;
 
 function setAutoEntrada(on) {
   autoEntrada = on;
@@ -869,6 +876,31 @@ function atualizarTemperatura() {
     proxDir.textContent = bias === 'ALTA' ? '▲ COMPRA' : '▼ VENDA';
     proxDir.style.color = dirColor;
     proxDir.style.borderColor = dirColor;
+  }
+
+  // Disparo automático: entra quando preço cruza o gatilho
+  if (autoDisparo && !posicao && calor >= 100) {
+    autoDisparo = false;
+    const btn = document.getElementById('btn-auto-disparo');
+    if (btn) { btn.textContent='🤖 AUTO-ENTRADA: OFF'; btn.style.background='var(--surface2)'; btn.style.borderColor='var(--border)'; btn.style.color='var(--muted)'; }
+    aceitarEstrategia('alvo1');
+    setTimeout(() => abrirPosicao(), 300);
+  }
+}
+
+function toggleAutoDisparo() {
+  autoDisparo = !autoDisparo;
+  const btn = document.getElementById('btn-auto-disparo');
+  if (autoDisparo) {
+    btn.textContent = '🤖 AUTO-ENTRADA: ON';
+    btn.style.background    = '#e3630922';
+    btn.style.borderColor   = '#e36209';
+    btn.style.color         = '#e36209';
+  } else {
+    btn.textContent = '🤖 AUTO-ENTRADA: OFF';
+    btn.style.background    = 'var(--surface2)';
+    btn.style.borderColor   = 'var(--border)';
+    btn.style.color         = 'var(--muted)';
   }
 }
 
