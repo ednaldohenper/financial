@@ -256,6 +256,56 @@
     </div>
   </div>
 
+  <!-- ── POSIÇÃO ABERTA ────────────────────────────────────── -->
+  <div id="posicao-card" class="card" style="display:none;border-color:var(--blue)55;">
+    <div class="card-title">
+      <span>Posição Aberta</span>
+      <span id="pos-tempo" style="font-size:11px;color:var(--muted);"></span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;border:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Entrada</div>
+        <div id="pos-entrada" style="font-size:18px;font-weight:700;">—</div>
+        <div id="pos-dir-qty" style="font-size:11px;color:var(--muted);margin-top:2px;">—</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;border:1px solid var(--border);">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Preço atual</div>
+        <div id="pos-atual" style="font-size:18px;font-weight:700;">—</div>
+        <div id="pos-var-pts" style="font-size:11px;margin-top:2px;">—</div>
+      </div>
+    </div>
+    <div id="pos-pnl-box" style="border-radius:10px;padding:16px;text-align:center;margin-bottom:14px;background:var(--surface2);border:2px solid var(--border);">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Resultado em aberto</div>
+      <div id="pos-pnl" style="font-size:42px;font-weight:800;letter-spacing:-1px;">R$ 0,00</div>
+      <div id="pos-pnl-pts" style="font-size:13px;color:var(--muted);margin-top:4px;">0 pts</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;border:1px solid #f8514933;text-align:center;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Stop</div>
+        <div id="pos-stop" style="font-size:14px;font-weight:700;color:var(--red);margin-top:3px;">—</div>
+        <div id="pos-stop-dist" style="font-size:10px;color:var(--muted);margin-top:2px;">—</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;border:1px solid #3fb95033;text-align:center;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Alvo 1</div>
+        <div id="pos-alvo1" style="font-size:14px;font-weight:700;color:var(--green);margin-top:3px;">—</div>
+        <div id="pos-alvo1-dist" style="font-size:10px;color:var(--muted);margin-top:2px;">—</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;border:1px solid #3fb95055;text-align:center;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Alvo 2</div>
+        <div id="pos-alvo2" style="font-size:14px;font-weight:700;color:var(--green);margin-top:3px;">—</div>
+        <div id="pos-alvo2-dist" style="font-size:10px;color:var(--muted);margin-top:2px;">—</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" style="flex:1;padding:10px;font-size:13px;background:#f8514922;border:1px solid #f8514966;color:var(--red);"
+        onclick="fecharPosicao('stop')">Fechar no Stop</button>
+      <button class="btn btn-buy" style="flex:2;padding:10px;font-size:14px;font-weight:700;"
+        onclick="fecharPosicao('atual')">✓ Fechar no Preço Atual</button>
+      <button class="btn" style="flex:1;padding:10px;font-size:13px;background:#3fb95022;border:1px solid #3fb95066;color:var(--green);"
+        onclick="fecharPosicao('alvo1')">Fechar no Alvo 1</button>
+    </div>
+  </div>
+
   <!-- ── TICKER AO VIVO ─────────────────────────────────────── -->
   <div class="card">
     <div class="card-title">
@@ -312,7 +362,8 @@
         <div style="display:flex;gap:8px;">
           <button class="btn btn-buy" onclick="calcSim()">Calcular</button>
           <button class="btn btn-clear" onclick="clearSim()">Limpar</button>
-          <button class="btn btn-buy" style="margin-left:auto;" onclick="addTrade()">+ Registrar</button>
+          <button class="btn btn-buy" style="margin-left:auto;background:var(--blue);" onclick="abrirPosicao()">▶ Abrir Posição</button>
+          <button class="btn btn-buy" onclick="addTrade()">+ Registrar</button>
         </div>
         <div id="sim-stop-bar" style="display:none;background:var(--surface2);border:1px solid #f8514933;border-radius:8px;padding:10px 14px;font-size:12px;">
           <span style="color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-size:10px;">Stop em: </span>
@@ -690,6 +741,94 @@ function calcSim() {
   val.textContent = fmtBRL(pnl); val.className = 'pnl-value '+(pnl>=0?'up':'down');
   document.getElementById('wdo-pnl-detail').textContent = `${fmt(Math.abs(pts),1)} pts · ${Math.abs(Math.round(pts/0.5))} ticks · ${qty} contrato(s) · ${dir==='C'?'Compra':'Venda'}`;
 }
+// ── Monitor de Posição Aberta ─────────────────────────────────────────────────
+let posicao = null;
+let posTimer = null;
+
+function abrirPosicao() {
+  const dir    = document.getElementById('wdo-dir').value;
+  const qty    = parseFloat(document.getElementById('wdo-qty').value)   || 1;
+  const entry  = parseFloat(document.getElementById('wdo-entry').value);
+  if (!entry) { alert('Defina o preço de entrada antes de abrir a posição.'); return; }
+
+  const plano  = lastSignal && lastSignal.plano ? lastSignal.plano : {};
+  const stopPts  = plano.stop_pts  || parseFloat(document.getElementById('risk-stop').value) || 20;
+  const alvo1Pts = plano.alvo1_pts || stopPts * 1.5;
+  const alvo2Pts = plano.alvo2_pts || stopPts * 2.5;
+
+  posicao = {
+    dir, qty, entry,
+    stop:  dir === 'C' ? entry - stopPts  : entry + stopPts,
+    alvo1: dir === 'C' ? entry + alvo1Pts : entry - alvo1Pts,
+    alvo2: dir === 'C' ? entry + alvo2Pts : entry - alvo2Pts,
+    stopPts, alvo1Pts, alvo2Pts,
+    inicio: new Date(),
+  };
+
+  document.getElementById('posicao-card').style.display = 'block';
+  document.getElementById('pos-entrada').textContent    = fmt(entry, 1) + ' pts';
+  document.getElementById('pos-dir-qty').textContent    = (dir==='C'?'COMPRA':'VENDA') + ' · ' + qty + ' contrato' + (qty>1?'s':'');
+  document.getElementById('pos-stop').textContent       = fmt(posicao.stop,  1);
+  document.getElementById('pos-alvo1').textContent      = fmt(posicao.alvo1, 1);
+  document.getElementById('pos-alvo2').textContent      = fmt(posicao.alvo2, 1);
+
+  posicao.card.scrollIntoView && document.getElementById('posicao-card').scrollIntoView({ behavior:'smooth', block:'center' });
+  atualizarPosicao();
+  if (posTimer) clearInterval(posTimer);
+  posTimer = setInterval(atualizarPosicao, 5000);
+}
+
+function atualizarPosicao() {
+  if (!posicao || tickerState.price == null) return;
+  const current = tickerState.price;
+  const diff    = posicao.dir === 'C' ? current - posicao.entry : posicao.entry - current;
+  const pnl     = diff * 10 * posicao.qty;
+  const cls     = pnl >= 0 ? 'up' : 'down';
+  const color   = pnl >= 0 ? '#3fb950' : '#f85149';
+
+  document.getElementById('pos-atual').textContent   = fmt(current, 1) + ' pts';
+  document.getElementById('pos-var-pts').innerHTML   =
+    `<span class="${cls}">${diff>=0?'+':''}${fmt(diff,1)} pts desde entrada</span>`;
+
+  const pnlEl = document.getElementById('pos-pnl');
+  pnlEl.textContent = fmtBRL(pnl);
+  pnlEl.style.color = color;
+  document.getElementById('pos-pnl-pts').textContent =
+    `${diff>=0?'+':''}${fmt(diff,1)} pts · ${posicao.qty} contrato${posicao.qty>1?'s':''}`;
+  document.getElementById('pos-pnl-box').style.borderColor = color + '88';
+
+  // distâncias
+  const distStop  = Math.abs(current - posicao.stop);
+  const distAlvo1 = Math.abs(posicao.alvo1 - current);
+  const distAlvo2 = Math.abs(posicao.alvo2 - current);
+  document.getElementById('pos-stop-dist').textContent  = fmt(distStop,1)  + ' pts restam';
+  document.getElementById('pos-alvo1-dist').textContent = fmt(distAlvo1,1) + ' pts restam';
+  document.getElementById('pos-alvo2-dist').textContent = fmt(distAlvo2,1) + ' pts restam';
+
+  // tempo em posição
+  const mins = Math.floor((new Date() - posicao.inicio) / 60000);
+  document.getElementById('pos-tempo').textContent = mins + ' min em posição';
+}
+
+function fecharPosicao(tipo) {
+  if (!posicao) return;
+  let exitPrice;
+  if (tipo === 'stop')  exitPrice = posicao.stop;
+  else if (tipo === 'alvo1') exitPrice = posicao.alvo1;
+  else exitPrice = tickerState.price || posicao.entry;
+
+  document.getElementById('wdo-dir').value   = posicao.dir;
+  document.getElementById('wdo-qty').value   = posicao.qty;
+  document.getElementById('wdo-entry').value = posicao.entry;
+  document.getElementById('wdo-exit').value  = exitPrice;
+  calcSim();
+  addTrade();
+
+  posicao = null;
+  if (posTimer) { clearInterval(posTimer); posTimer = null; }
+  document.getElementById('posicao-card').style.display = 'none';
+}
+
 function aceitarEstrategia(alvo) {
   if (!lastSignal || !lastSignal.plano) return;
   const p    = lastSignal.plano;
