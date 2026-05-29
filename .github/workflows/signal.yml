@@ -13,10 +13,12 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout do repositório
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Configurar Python 3.11
+      - name: Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -29,14 +31,16 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python signal_wdo.py
 
-      - name: Gerar backtest (últimos 10 pregões)
+      - name: Gerar backtest
         run: python backtest.py
 
-      - name: Salvar arquivos no repositório
+      - name: Commit e push
         run: |
           git config user.name  "WDO Signal Bot"
           git config user.email "bot@github-actions"
           git add signal.json backtest.json
-          git diff --staged --quiet || git commit -m "sinal+backtest: $(TZ='America/Sao_Paulo' date +'%Y-%m-%d %H:%M') BRT"
-          git pull --rebase origin main
-          git push
+          git diff --staged --quiet && echo "Sem alterações." && exit 0
+          git commit -m "sinal+backtest: $(TZ='America/Sao_Paulo' date +'%Y-%m-%d %H:%M') BRT"
+          git fetch origin main
+          git rebase origin/main
+          git push origin main
