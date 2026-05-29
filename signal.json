@@ -1,20 +1,75 @@
 {
-  "bias": "NEUTRO",
-  "confianca": 0,
-  "resumo": "Sinal ainda não gerado. Execute o script ou aguarde a automação às 8h55.",
-  "fator_principal": "—",
-  "fatores_favor": [],
-  "fatores_contra": [],
+  "bias": "ALTA",
+  "confianca": 72,
+  "resumo": "DXY em alta (+0.06%) com EUR/USD também subindo cria ambiente favorável para WDO, confirmado pelo risco-off refletido na alta do ouro (+1.42%). USD/BRL está em patamar elevado (5.0679), reforçando pressão compradora no dólar.",
+  "fator_principal": "DXY em alta com flight-to-safety (ouro +1.42%) sinalizando fortalecimento do dólar",
+  "fatores_favor": [
+    "DXY subindo (+0.06%) com correlação positiva ~0.85 com WDO",
+    "Ouro forte (+1.42%) indicando risk-off e demanda por dólar",
+    "USD/BRL em nível elevado (5.0679) reforçando pressão dólar",
+    "S&P Futures estável (+0.11%) sem contraposição agressiva"
+  ],
+  "fatores_contra": [
+    "EUR/USD subindo (+0.31%) gera correlação negativa com WDO",
+    "Petróleo estável/queda leve (-0.28%) não prejudica BRL",
+    "DXY com movimento muito tímido (+0.06%), sem força decisiva"
+  ],
   "zonas_sugeridas": {
-    "resistencia2": null,
-    "resistencia1": null,
-    "suporte1": null,
-    "suporte2": null
+    "resistencia2": 5.12,
+    "resistencia1": 5.09,
+    "suporte1": 5.04,
+    "suporte2": 5.0
   },
-  "validade": "—",
-  "alerta": null,
-  "contrato": "—",
-  "gerado_em": null,
-  "market_data": {},
-  "tokens_usados": 0
+  "validade": "manha",
+  "alerta": "Conflito moderado entre alta do DXY e alta do EUR/USD enfraquece confiança. Flight-to-safety está em estágio inicial; monitor de Nikkei +2.53% (Ásia otimista) pode reverter risk-off ao longo do dia.",
+  "contrato": "WDOM26",
+  "gerado_em": "2026-05-29T14:48:41.578346",
+  "market_data": {
+    "DXY": {
+      "label": "DXY — Índice do Dólar",
+      "price": 99.081,
+      "change_pct": 0.06
+    },
+    "EURUSD": {
+      "label": "EUR/USD",
+      "price": 1.1654,
+      "change_pct": 0.31
+    },
+    "SP500F": {
+      "label": "S&P 500 Futures",
+      "price": 7590.25,
+      "change_pct": 0.11
+    },
+    "NASDAQF": {
+      "label": "Nasdaq Futures",
+      "price": 30380.5,
+      "change_pct": 0.24
+    },
+    "OURO": {
+      "label": "Ouro (XAU/USD)",
+      "price": 4563.3999,
+      "change_pct": 1.42
+    },
+    "PETROLEO": {
+      "label": "Petróleo WTI",
+      "price": 88.65,
+      "change_pct": -0.28
+    },
+    "NIKKEI": {
+      "label": "Nikkei 225",
+      "price": 66329.5,
+      "change_pct": 2.53
+    },
+    "DAX": {
+      "label": "DAX — Alemanha",
+      "price": 25103.5293,
+      "change_pct": 0.04
+    },
+    "USDBRL": {
+      "label": "USD/BRL spot",
+      "price": 5.0679,
+      "change_pct": -0.1
+    }
+  },
+  "tokens_usados": 1290
 }
