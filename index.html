@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WDO — Sinal & Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
     --bg: #0d1117; --surface: #161b22; --surface2: #21262d;
@@ -176,6 +177,17 @@
 </header>
 
 <div class="main">
+
+  <!-- ── GRÁFICO HISTÓRICO ────────────────────────────────────── -->
+  <div class="card" style="padding:14px 18px;">
+    <div class="card-title" style="margin-bottom:10px;">
+      <span>USD/BRL — Histórico 15 dias <span style="color:var(--muted);font-size:10px;">(referência WDO)</span></span>
+      <span id="chart-trend" style="font-size:12px;font-weight:700;">—</span>
+    </div>
+    <div style="position:relative;height:90px;">
+      <canvas id="priceChart"></canvas>
+    </div>
+  </div>
 
   <!-- ── SINAL DA IA ──────────────────────────────────────────── -->
   <div id="signal-card" class="signal-card NEUTRO">
@@ -547,10 +559,87 @@ function calcRisk() {
   document.getElementById('risk-daily-max').textContent = fmtBRL(dailyMax);
 }
 
+// ── Gráfico histórico ─────────────────────────────────────────────────────────
+let priceChart = null;
+async function loadChart() {
+  try {
+    const res  = await fetch('https://economia.awesomeapi.com.br/json/daily/USD-BRL/15');
+    const data = await res.json();
+    const days = data.slice().reverse();
+
+    const labels = days.map(d => {
+      const date = new Date(parseInt(d.timestamp) * 1000);
+      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    });
+    const prices = days.map(d => parseFloat(d.bid));
+
+    const first = prices[0], last = prices[prices.length - 1];
+    const up    = last >= first;
+    const color = up ? '#3fb950' : '#f85149';
+    const pct   = ((last - first) / first * 100);
+
+    document.getElementById('chart-trend').textContent =
+      (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+    document.getElementById('chart-trend').style.color = color;
+
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    if (priceChart) priceChart.destroy();
+    priceChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data: prices,
+          borderColor: color,
+          backgroundColor: color + '18',
+          borderWidth: 2,
+          pointRadius: 2,
+          pointHoverRadius: 5,
+          pointBackgroundColor: color,
+          tension: 0.35,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 400 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#21262d',
+            borderColor: '#30363d',
+            borderWidth: 1,
+            titleColor: '#8b949e',
+            bodyColor: '#e6edf3',
+            callbacks: { label: ctx => ' USD/BRL ' + ctx.parsed.y.toFixed(4) }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: '#30363d55' },
+            ticks: { color: '#8b949e', font: { size: 10, family: 'SF Mono, Fira Code, monospace' }, maxRotation: 0 }
+          },
+          y: {
+            position: 'right',
+            grid: { color: '#30363d55' },
+            ticks: { color: '#8b949e', font: { size: 10, family: 'SF Mono, Fira Code, monospace' }, callback: v => v.toFixed(2) }
+          }
+        }
+      }
+    });
+  } catch(e) {
+    console.error('Gráfico:', e);
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadSaved();
 renderLog();
 loadSignal();
+loadChart();
+// Atualiza gráfico a cada 30 minutos
+setInterval(loadChart, 30 * 60 * 1000);
 
 // Ticker USD/BRL — inicia automático, sem token
 refreshLive();
