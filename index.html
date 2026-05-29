@@ -588,9 +588,11 @@ function renderPlano(s) {
     </div>
     <div class="plano-grid">
       <div class="plano-item">
-        <label>Nível de entrada</label>
-        <div class="plano-val" style="color:${biasColor};">${p.entrada_nivel || '—'}</div>
-        <div class="plano-sub">pontos WDO</div>
+        <label>Preço de entrada <span style="color:var(--blue);font-size:9px;">● AO VIVO</span></label>
+        <div class="plano-val" id="plano-entrada-live" style="color:${biasColor};">
+          ${tickerState.price ? fmt(tickerState.price, 1) : '—'}
+        </div>
+        <div class="plano-sub">gatilho sugerido: ${p.entrada_nivel || '—'} pts</div>
       </div>
       <div class="plano-item">
         <label>Janela</label>
@@ -697,6 +699,10 @@ function renderTicker() {
   document.getElementById('wdo-open').textContent   = fmt(open, 1);
   document.getElementById('wdo-high').textContent   = fmt(high, 1);
   document.getElementById('wdo-low').textContent    = fmt(low, 1);
+
+  // Atualiza preço de entrada ao vivo no plano operacional
+  const planoLive = document.getElementById('plano-entrada-live');
+  if (planoLive) planoLive.textContent = fmt(price, 1);
 }
 
 function renderLatency() {
@@ -877,7 +883,7 @@ function aceitarEstrategia(alvo) {
   if (!p.entrada_nivel) return;
 
   const dir      = bias === 'ALTA' ? 'C' : 'V';
-  const entrada  = p.entrada_nivel;
+  const entrada  = tickerState.price || p.entrada_nivel;  // sempre preço real ao vivo
   const alvoPts  = alvo === 'alvo2' ? (p.alvo2_pts || p.alvo1_pts) : p.alvo1_pts;
   const stopPts  = p.stop_pts || 20;
   const saida    = dir === 'C' ? entrada + alvoPts : entrada - alvoPts;
