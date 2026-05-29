@@ -659,7 +659,10 @@ function renderPlano(s) {
       <div class="temp-markers">
         <span>Frio</span><span>|</span><span>Aquecendo</span><span>|</span><span>Atenção</span><span>|</span><span>Zona</span><span>|</span><span>Entrar</span>
       </div>
-      <div id="temp-label" style="text-align:center;margin-top:10px;font-size:14px;font-weight:800;letter-spacing:1px;color:var(--muted);">Aguardando...</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;">
+        <div id="prox-direcao" style="font-size:13px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:6px;border:1px solid var(--border);">—</div>
+        <div id="temp-label" style="font-size:14px;font-weight:800;letter-spacing:1px;color:var(--muted);">Aguardando...</div>
+      </div>
     </div>
 
     <div style="display:flex;gap:8px;margin-top:14px;">
@@ -855,10 +858,18 @@ function atualizarTemperatura() {
   lbl.style.animation = calor > 88 ? 'shakeLabel .6s infinite' : 'none';
 
   const proxG = document.getElementById('prox-gatilho');
+  const proxDir = document.getElementById('prox-direcao');
   if (proxA) { proxA.textContent = fmt(atual, 1); proxA.style.color = color; }
   if (proxD) { proxD.textContent = fmt(dist, 1);  proxD.style.color = calor > 50 ? color : 'var(--text)'; }
   if (proxS) { proxS.textContent = calor < 50 ? `${Math.round(100-calor)}% longe do gatilho` : `${Math.round(calor)}% de proximidade`; proxS.style.color = color; }
   if (proxG) proxG.textContent = fmt(gatilho, 1);
+  if (proxDir) {
+    const bias = lastSignal.bias;
+    const dirColor = bias === 'ALTA' ? 'var(--green)' : 'var(--red)';
+    proxDir.textContent = bias === 'ALTA' ? '▲ COMPRA' : '▼ VENDA';
+    proxDir.style.color = dirColor;
+    proxDir.style.borderColor = dirColor;
+  }
 }
 
 function onEntradaManual() {
