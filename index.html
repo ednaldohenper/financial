@@ -982,6 +982,7 @@ function abrirPosicao() {
   journal.pnl += 0;
   saveJournal();
   renderLog();
+  renderTradesChart();
 
   document.getElementById('posicao-card').style.display = 'block';
   document.getElementById('pos-entrada').textContent    = fmt(entry, 1) + ' pts';
@@ -1026,6 +1027,9 @@ function atualizarPosicao() {
   // tempo em posição
   const mins = Math.floor((new Date() - posicao.inicio) / 60000);
   document.getElementById('pos-tempo').textContent = mins + ' min em posição';
+
+  // Atualiza a barra aberta no gráfico de operações
+  renderTradesChart();
 
   // Atualiza linha do journal em tempo real
   renderLog();
@@ -1179,15 +1183,17 @@ function clearLog() {
 let tradesChart = null;
 
 function renderTradesChart() {
-  const trades  = journal.trades.filter(t => t.status === 'fechado');
+  const closed  = journal.trades.filter(t => t.status === 'fechado');
+  const abertos = journal.trades.filter(t => t.status === 'aberto');
+  const trades  = [...closed, ...abertos];  // abertos aparecem por último
   const empty   = document.getElementById('ops-empty');
   const wrap    = document.getElementById('ops-chart-wrap');
 
-  // Stats
-  const wins    = trades.filter(t => t.pnl > 0);
-  const losses  = trades.filter(t => t.pnl < 0);
-  const totalPnl = trades.reduce((s, t) => s + t.pnl, 0);
-  const wr      = trades.length ? Math.round(wins.length / trades.length * 100) : 0;
+  // Stats (apenas fechados)
+  const wins    = closed.filter(t => t.pnl > 0);
+  const losses  = closed.filter(t => t.pnl < 0);
+  const totalPnl = closed.reduce((s, t) => s + t.pnl, 0);
+  const wr      = closed.length ? Math.round(wins.length / closed.length * 100) : 0;
   const avgW    = wins.length   ? wins.reduce((s,t)=>s+t.pnl,0)/wins.length     : 0;
   const avgL    = losses.length ? losses.reduce((s,t)=>s+t.pnl,0)/losses.length : 0;
 
@@ -1195,21 +1201,44 @@ function renderTradesChart() {
   pnlEl.textContent = fmtBRL(totalPnl);
   pnlEl.className   = totalPnl > 0 ? 'up' : totalPnl < 0 ? 'down' : '';
   document.getElementById('ops-wr').textContent =
-    trades.length ? `${wr}% acerto · ${trades.length} trade${trades.length!==1?'s':''}` : '0 trades';
+    closed.length ? `${wr}% acerto · ${closed.length} trade${closed.length!==1?'s':''}` : '0 trades';
   document.getElementById('ops-avg-w').textContent = wins.length   ? `▲ média ${fmtBRL(avgW)}`   : '';
   document.getElementById('ops-avg-l').textContent = losses.length ? `▼ média ${fmtBRL(avgL)}`   : '';
 
   if (!trades.length) { empty.style.display='block'; wrap.style.display='none'; if(tradesChart){tradesChart.destroy();tradesChart=null;} return; }
   empty.style.display = 'none'; wrap.style.display = 'block';
 
-  const labels  = trades.map((t, i) => `${t.date} ${t.dir==='C'?'▲':'▼'}`);
-  const barData = trades.map(t => t.pts * t.qty);
-  const barColors = trades.map(t => t.pnl >= 0 ? '#3fb95088' : '#f8514988');
-  const barBorder = trades.map(t => t.pnl >= 0 ? '#3fb950'   : '#f85149');
+  const labels  = trades.map(t => t.status === 'aberto'
+    ? `${t.date} EM ABERTO`
+    : `${t.date} ${t.dir==='C'?'▲':'▼'}`);
 
-  // Linha de P&L acumulado (em R$)
+  // Para abertos: usa P&L não realizado atual se disponível, senão 0
+  const barData = trades.map(t => {
+    if (t.status === 'aberto') {
+      if (posicao && tickerState.price) {
+        const pts = t.dir === 'C' ? tickerState.price - t.entry : t.entry - tickerState.price;
+        return parseFloat((pts * t.qty).toFixed(1));
+      }
+      return 0;
+    }
+    return t.pts * t.qty;
+  });
+
+  const barColors = trades.map(t => {
+    if (t.status === 'aberto') return '#58a6ff44';
+    return t.pnl >= 0 ? '#3fb95088' : '#f8514988';
+  });
+  const barBorder = trades.map(t => {
+    if (t.status === 'aberto') return '#58a6ff';
+    return t.pnl >= 0 ? '#3fb950' : '#f85149';
+  });
+
+  // Linha de P&L acumulado (em R$) — só fechados; aberto fica em null
   let acc = 0;
-  const lineData = trades.map(t => { acc += t.pnl; return acc; });
+  const lineData = trades.map(t => {
+    if (t.status === 'aberto') return null;
+    acc += t.pnl; return acc;
+  });
 
   const ctx = document.getElementById('tradesChart').getContext('2d');
   if (tradesChart) tradesChart.destroy();
