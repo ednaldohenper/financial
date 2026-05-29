@@ -158,10 +158,32 @@ def generate_signal():
     with open("signal.json", "w", encoding="utf-8") as f:
         json.dump(signal, f, ensure_ascii=False, indent=2)
 
+    # Acumula histórico de sinais para o backtest usar o sinal real do Claude
+    history_file = "signal_history.json"
+    try:
+        with open(history_file, "r", encoding="utf-8") as f:
+            history = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        history = []
+
+    data_hoje = datetime.now(BRT).strftime("%Y-%m-%d")
+    history = [h for h in history if h.get("data") != data_hoje]  # remove duplicata do dia
+    history.append({
+        "data":        data_hoje,
+        "bias":        signal["bias"],
+        "confianca":   signal["confianca"],
+        "contrato":    signal["contrato"],
+        "gerado_em":   signal["gerado_em"],
+    })
+    history = history[-30:]  # mantém apenas os últimos 30 dias
+
+    with open(history_file, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+
     log(f"SINAL: {signal['bias']} — confiança {signal['confianca']}%")
     log(f"Fator principal: {signal['fator_principal']}")
     log(f"Tokens usados: {signal['tokens_usados']}")
-    log("signal.json salvo com sucesso.")
+    log("signal.json + signal_history.json salvos com sucesso.")
 
 
 if __name__ == "__main__":

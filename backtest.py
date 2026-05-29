@@ -53,8 +53,21 @@ def build_signal(prev_changes: dict):
     conf = min(int(abs(score) / max(len(details), 1) * 100), 95)
     return bias, conf, details
 
+def load_signal_history():
+    """Carrega histórico de sinais reais do Claude (gerado pelo signal_wdo.py)."""
+    try:
+        with open("signal_history.json", "r", encoding="utf-8") as f:
+            history = json.load(f)
+        return {h["data"]: h for h in history}
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
 def run_backtest():
     log = lambda msg: print(f"[BACKTEST] {msg}", flush=True)
+
+    log("Carregando histórico de sinais Claude...")
+    signal_history = load_signal_history()
+    log(f"  {len(signal_history)} sinais encontrados no histórico.")
 
     log("Buscando dados intraday USD/BRL (30m)...")
     intraday = fetch_intraday_usdbrl()
@@ -112,7 +125,17 @@ def run_backtest():
                 last_row = before.iloc[-1]
                 prev_chgs = {k: v for k, v in last_row.items() if not pd.isna(v)}
 
-        sinal, conf, ind_details = build_signal(prev_chgs)
+        # Usa sinal real do Claude se disponível, senão usa mecânico
+        hist_entry = signal_history.get(str(day))
+        if hist_entry:
+            sinal = hist_entry["bias"]
+            conf  = hist_entry["confianca"]
+            fonte = "claude"
+        else:
+            sinal, conf, _ = build_signal(prev_chgs)
+            fonte = "mecanico"
+
+        ind_details = {k: v for k, v in prev_chgs.items()} if prev_chgs else {}
         acertou = (sinal == resultado) if sinal != 'NEUTRO' else None
 
         sessions.append({
@@ -128,6 +151,7 @@ def run_backtest():
             'sinal_previsto':     sinal,
             'confianca_previsao': conf,
             'acertou':            acertou,
+            'fonte_sinal':        fonte,
             'indicadores':        ind_details,
         })
 
