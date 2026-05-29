@@ -164,6 +164,19 @@
 
   .up { color: var(--green); } .down { color: var(--red); } .neutral { color: var(--muted); }
 
+  /* ── PLANO OPERACIONAL ──────────────────────────────────────── */
+  .plano-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .plano-item { background: var(--surface2); border-radius: 8px; padding: 12px 14px; border: 1px solid var(--border); }
+  .plano-item label { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .plano-item .plano-val { font-size: 20px; font-weight: 700; }
+  .plano-item .plano-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .plano-condicao { background: var(--surface2); border-radius: 8px; padding: 12px 14px; border: 1px solid var(--blue)44; margin-bottom: 10px; }
+  .plano-condicao label { font-size: 10px; color: var(--blue); text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 5px; }
+  .plano-condicao p { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .plano-cancelar { background: #e3b34110; border-radius: 8px; padding: 10px 14px; border: 1px solid #e3b34133; font-size: 12px; color: var(--yellow); }
+  .rr-bar { display: flex; gap: 4px; align-items: center; margin-top: 12px; }
+  .rr-seg { height: 8px; border-radius: 4px; }
+
   .refresh-bar { display: flex; align-items: center; gap: 8px; padding: 8px 24px 16px; color: var(--muted); font-size: 11px; }
   .progress { flex: none; width: 120px; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
   .progress-fill { height: 100%; background: var(--blue); border-radius: 2px; transition: width 1s linear; }
@@ -223,6 +236,15 @@
     <div style="margin-top:16px;" id="signal-body">
       <div style="color:var(--muted);text-align:center;padding:24px 0;">Carregando sinal...</div>
     </div>
+  </div>
+
+  <!-- ── PLANO OPERACIONAL ──────────────────────────────────── -->
+  <div id="plano-card" class="card" style="display:none;">
+    <div class="card-title">
+      <span>Plano Operacional do Dia</span>
+      <span id="plano-badge" style="font-size:11px;"></span>
+    </div>
+    <div id="plano-body"></div>
   </div>
 
   <!-- ── PRÉ-MERCADO ─────────────────────────────────────────── -->
@@ -474,6 +496,75 @@ function renderSignal(s) {
 
   document.getElementById('signal-age').textContent =
     s.gerado_em ? `gerado às ${new Date(s.gerado_em).toLocaleTimeString('pt-BR')}` : '';
+
+  renderPlano(s);
+}
+
+function renderPlano(s) {
+  const p = s.plano;
+  const card = document.getElementById('plano-card');
+  if (!p || s.bias === 'NEUTRO') { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const bias      = s.bias || 'NEUTRO';
+  const biasColor = bias === 'ALTA' ? 'var(--green)' : 'var(--red)';
+  const biasArrow = bias === 'ALTA' ? '▲' : '▼';
+
+  // Contratos calculados pelo risco configurado
+  const capital  = parseFloat(document.getElementById('risk-capital').value) || 10000;
+  const riskPct  = parseFloat(document.getElementById('risk-pct').value)     || 1;
+  const stopPts  = p.stop_pts || parseFloat(document.getElementById('risk-stop').value) || 20;
+  const maxRisk  = capital * (riskPct / 100);
+  const contratos = Math.max(1, Math.floor(maxRisk / (stopPts * 10)));
+  const risco_brl = stopPts * 10 * contratos;
+  const alvo1_brl = (p.alvo1_pts || 0) * 10 * contratos;
+  const alvo2_brl = (p.alvo2_pts || 0) * 10 * contratos;
+  const rr1 = p.alvo1_pts ? (p.alvo1_pts / stopPts).toFixed(1) : '—';
+  const rr2 = p.alvo2_pts ? (p.alvo2_pts / stopPts).toFixed(1) : '—';
+
+  document.getElementById('plano-badge').innerHTML =
+    `<span style="color:${biasColor};font-weight:700;">${biasArrow} ${bias}</span> · ${s.confianca}% confiança`;
+
+  document.getElementById('plano-body').innerHTML = `
+    <div class="plano-condicao">
+      <label>Condição de entrada</label>
+      <p>${p.entrada_condicao || '—'}</p>
+    </div>
+    <div class="plano-grid">
+      <div class="plano-item">
+        <label>Nível de entrada</label>
+        <div class="plano-val" style="color:${biasColor};">${p.entrada_nivel || '—'}</div>
+        <div class="plano-sub">pontos WDO</div>
+      </div>
+      <div class="plano-item">
+        <label>Janela</label>
+        <div class="plano-val" style="font-size:14px;color:var(--blue);">${p.entrada_janela || '—'}</div>
+        <div class="plano-sub">horário BRT</div>
+      </div>
+      <div class="plano-item">
+        <label>Contratos</label>
+        <div class="plano-val">${contratos}</div>
+        <div class="plano-sub">com R$${fmt(capital,0)} · risco ${riskPct}%</div>
+      </div>
+    </div>
+    <div class="plano-grid">
+      <div class="plano-item" style="border-color:#f8514944;">
+        <label>Stop loss</label>
+        <div class="plano-val down">${stopPts} pts</div>
+        <div class="plano-sub">−R$${fmt(risco_brl,0)} por trade</div>
+      </div>
+      <div class="plano-item" style="border-color:#3fb95044;">
+        <label>Alvo 1  <span style="color:var(--muted);">RR ${rr1}:1</span></label>
+        <div class="plano-val up">+${p.alvo1_pts || '—'} pts</div>
+        <div class="plano-sub">+R$${fmt(alvo1_brl,0)} potencial</div>
+      </div>
+      <div class="plano-item" style="border-color:#3fb95066;">
+        <label>Alvo 2  <span style="color:var(--muted);">RR ${rr2}:1</span></label>
+        <div class="plano-val up">+${p.alvo2_pts || '—'} pts</div>
+        <div class="plano-sub">+R$${fmt(alvo2_brl,0)} potencial</div>
+      </div>
+    </div>
+    ${p.cancelar_se ? `<div class="plano-cancelar">⚠ Cancelar se: ${p.cancelar_se}</div>` : ''}`;
 }
 
 function renderMarketData(md) {

@@ -87,27 +87,47 @@ def build_prompt(market_data, history, contract):
 
     lines += [
         "",
-        "CORRELAÇÕES HISTÓRICAS CONHECIDAS DO WDO:",
-        "• DXY subindo  →  WDO tende a subir   (correlação positiva ~0.85)",
-        "• EUR/USD subindo  →  WDO tende a cair (correlação negativa)",
-        "• S&P Futures caindo + DXY subindo  →  tendência de alta no WDO",
-        "• Risk-off global (ouro sobe + bolsas caem)  →  dólar forte  →  WDO pode subir",
-        "• Petróleo subindo (BRL se fortalece por pauta exportadora)  →  WDO pode cair",
+        "CORRELAÇÕES HISTÓRICAS DO WDO (Mini Dólar B3):",
+        "• DXY subindo  →  WDO tende a subir   (correlação ~0.85)",
+        "• EUR/USD subindo  →  WDO tende a cair",
+        "• S&P Futures caindo + DXY subindo  →  alta no WDO",
+        "• Risk-off global (ouro sobe + bolsas caem)  →  dólar forte  →  WDO sobe",
+        "• Petróleo subindo  →  BRL se fortalece  →  WDO pode cair",
         "",
-        "Com base nesses dados, gere sua análise. Responda SOMENTE com o JSON abaixo, sem texto adicional:",
+        "JANELAS OPERACIONAIS TÍPICAS DO WDO:",
+        "• 09:10–10:30 BRT — melhor janela, tendência do dia se define",
+        "• 14:30–15:30 BRT — abertura NY, renovação de volatilidade",
+        "• Evitar: 11:00–13:30 (almoço, baixo volume) e últimos 15min do pregão",
+        "",
+        "PARÂMETROS DE RISCO WDO:",
+        "• 1 ponto = R$ 10 por contrato · tick mínimo = 0,5 pt = R$ 5",
+        "• Stop sugerido: 15–25 pts para day trade (R$150–R$250 por contrato)",
+        "• Alvo mínimo: relação risco:retorno de 1:1,5 (nunca arriscar mais do que busca ganhar)",
+        "",
+        "Com base em TODOS os dados acima, gere a análise e o plano operacional.",
+        "Responda SOMENTE com o JSON abaixo, sem texto adicional:",
         "",
         """{
   "bias": "ALTA" | "BAIXA" | "NEUTRO",
   "confianca": 0-100,
-  "resumo": "2-3 frases explicando o sinal de forma direta",
-  "fator_principal": "o driver mais relevante do sinal hoje",
+  "resumo": "2-3 frases explicando o contexto do dia de forma direta",
+  "fator_principal": "o driver mais relevante hoje",
   "fatores_favor": ["fator 1", "fator 2"],
   "fatores_contra": ["fator 1", "fator 2"],
   "zonas_sugeridas": {
-    "resistencia2": número em PONTOS WDO (ex: 5120, não 5.12),
-    "resistencia1": número em PONTOS WDO (ex: 5090, não 5.09),
-    "suporte1": número em PONTOS WDO (ex: 5040, não 5.04),
-    "suporte2": número em PONTOS WDO (ex: 5000, não 5.00)
+    "resistencia2": número em PONTOS WDO (ex: 5120),
+    "resistencia1": número em PONTOS WDO (ex: 5090),
+    "suporte1":     número em PONTOS WDO (ex: 5040),
+    "suporte2":     número em PONTOS WDO (ex: 5000)
+  },
+  "plano": {
+    "entrada_condicao": "descrição objetiva do que precisa acontecer para entrar (ex: 'rompimento acima de 5090 com DXY acelerando')",
+    "entrada_nivel":    número em PONTOS WDO — nível exato de entrada,
+    "entrada_janela":   "HH:MM–HH:MM BRT — janela ideal de entrada",
+    "stop_pts":         número inteiro — distância do stop em pontos (entre 15 e 30),
+    "alvo1_pts":        número inteiro — 1º alvo em pontos (mín 1.5× o stop),
+    "alvo2_pts":        número inteiro — 2º alvo / extensão (mín 2.5× o stop),
+    "cancelar_se":      "condição que invalida o setup, ou null"
   },
   "validade": "abertura" | "manha" | "dia_todo",
   "alerta": "aviso se dados conflitantes ou incerteza alta, senão null"
@@ -132,7 +152,7 @@ def generate_signal():
 
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=700,
+        max_tokens=1100,
         messages=[{"role": "user", "content": prompt}],
     )
 
