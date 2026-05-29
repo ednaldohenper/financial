@@ -192,14 +192,14 @@
   <!-- ── BACKTEST ─────────────────────────────────────────────── -->
   <div class="card" style="padding:14px 18px;">
     <div class="card-title" style="margin-bottom:12px;">
-      <span>Backtest — Abertura 9h–9h30 · Últimos 10 Pregões</span>
+      <span>Backtest — Abertura 9h–9h30 · Últimos 15 Pregões</span>
       <div style="display:flex;gap:14px;align-items:center;">
         <span id="bt-accuracy" style="font-size:13px;font-weight:700;">—</span>
         <span id="bt-hits"   style="font-size:11px;color:var(--green);">—</span>
         <span id="bt-misses" style="font-size:11px;color:var(--red);">—</span>
       </div>
     </div>
-    <div style="position:relative;height:130px;">
+    <div style="position:relative;height:150px;">
       <canvas id="backtestChart"></canvas>
     </div>
     <div style="display:flex;gap:20px;margin-top:10px;font-size:10px;color:var(--muted);flex-wrap:wrap;">
@@ -306,6 +306,10 @@
         <div class="risk-item"><label>Risco / Trade (%)</label><input type="number" id="risk-pct" value="1" step="0.1" oninput="calcRisk();saveRisk()"></div>
         <div class="risk-item"><label>Stop (pts)</label><input type="number" id="risk-stop" value="25" step="0.5" oninput="calcRisk();saveRisk()"></div>
         <div class="risk-item"><label>Limite Diário (%)</label><input type="number" id="risk-daily-pct" value="2" step="0.1" oninput="calcRisk();saveRisk()"></div>
+        <div class="risk-item" style="grid-column:1/-1;border-color:var(--blue)33;">
+          <label style="color:var(--blue);">Convicção Mínima para Operar (%)</label>
+          <input type="number" id="risk-conv-min" value="60" min="0" max="100" step="5" oninput="calcRisk();saveRisk();rerenderWithThreshold()">
+        </div>
       </div>
       <div class="risk-result"><label>Risco máx. / trade</label><span id="risk-max" class="down">—</span></div>
       <div class="risk-result"><label>Contratos pelo stop</label><span id="risk-lots">—</span></div>
@@ -369,15 +373,28 @@ async function loadSignal() {
 }
 
 function renderSignal(s) {
+  lastSignal = s;
   const card = document.getElementById('signal-card');
   const body = document.getElementById('signal-body');
   const bias = s.bias || 'NEUTRO';
 
   card.className = `signal-card ${bias}`;
 
-  const arrow = bias === 'ALTA' ? '▲' : bias === 'BAIXA' ? '▼' : '—';
-  const conf  = s.confianca ?? 0;
-  const confCls = conf >= 70 ? 'high' : conf >= 45 ? 'medium' : 'low';
+  const arrow    = bias === 'ALTA' ? '▲' : bias === 'BAIXA' ? '▼' : '—';
+  const conf     = s.confianca ?? 0;
+  const confCls  = conf >= 70 ? 'high' : conf >= 45 ? 'medium' : 'low';
+  const minConv  = getConvMinima();
+  const operar   = bias !== 'NEUTRO' && conf >= minConv;
+  const operarHTML = `
+    <div style="text-align:center;margin:16px 0 8px;">
+      <span style="display:inline-block;padding:8px 32px;border-radius:10px;font-size:18px;font-weight:800;letter-spacing:1.5px;
+        background:${operar ? '#0d2818' : '#1c1c1c'};
+        color:${operar ? 'var(--green)' : 'var(--muted)'};
+        border:2px solid ${operar ? 'var(--green)' : 'var(--border)'};">
+        ${operar ? '✓ OPERAR' : '✗ AGUARDAR'}
+      </span>
+      <div style="font-size:10px;color:var(--muted);margin-top:5px;">${conf}% ${operar ? '≥' : '<'} ${minConv}% (mínimo configurado)</div>
+    </div>`;
   const valBadge = s.validade && s.validade !== '—'
     ? `<span class="validade-badge ${s.validade}">${s.validade.replace('_', ' ')}</span>` : '';
 
@@ -391,7 +408,7 @@ function renderSignal(s) {
     ? new Date(s.gerado_em).toLocaleString('pt-BR')
     : 'nunca';
 
-  body.innerHTML = `
+  body.innerHTML = operarHTML + `
     <div class="signal-header">
       <div class="signal-badge ${bias}">
         <span class="signal-arrow">${arrow}</span>
@@ -517,6 +534,7 @@ function saveRisk()  {
     pct:     document.getElementById('risk-pct').value,
     stop:    document.getElementById('risk-stop').value,
     daily:   document.getElementById('risk-daily-pct').value,
+    convMin: document.getElementById('risk-conv-min').value,
   }));
 }
 function loadSaved() {
@@ -526,6 +544,7 @@ function loadSaved() {
     document.getElementById('risk-pct').value       = risk.pct;
     document.getElementById('risk-stop').value      = risk.stop;
     document.getElementById('risk-daily-pct').value = risk.daily;
+    if (risk.convMin) document.getElementById('risk-conv-min').value = risk.convMin;
   }
   calcRisk();
 }
@@ -585,12 +604,24 @@ function calcRisk() {
 
 // ── Backtest ──────────────────────────────────────────────────────────────────
 let backtestChart = null;
+let backtestData  = null;
+let lastSignal    = null;
+
+function getConvMinima() {
+  return parseFloat(document.getElementById('risk-conv-min').value) || 60;
+}
+
+function rerenderWithThreshold() {
+  if (backtestData && backtestData.sessions && backtestData.sessions.length) renderBacktest(backtestData);
+  if (lastSignal) renderSignal(lastSignal);
+}
 
 async function loadBacktest() {
   try {
     const res = await fetch('backtest.json?t=' + Date.now());
     if (!res.ok) throw new Error('backtest.json não encontrado');
     const data = await res.json();
+    backtestData = data;
     if (data.sessions && data.sessions.length) renderBacktest(data);
   } catch(e) {
     console.error('Backtest:', e);
@@ -607,10 +638,12 @@ function renderBacktest(data) {
   const barBg     = sessions.map(s => s.resultado === 'ALTA' ? '#3fb95055' : s.resultado === 'BAIXA' ? '#f8514955' : '#8b949e33');
   const barBorder = sessions.map(s => s.resultado === 'ALTA' ? '#3fb950'   : s.resultado === 'BAIXA' ? '#f85149'   : '#8b949e');
 
-  // Pontos de performance: azul=acerto, laranja=erro, cinza=neutro
-  const dotColor = sessions.map(s =>
-    s.acertou === null ? '#8b949e' : s.acertou ? '#58a6ff' : '#e36209'
-  );
+  // Pontos de performance: aplica limiar de convicção
+  const threshold = getConvMinima();
+  const dotColor = sessions.map(s => {
+    if (s.sinal_previsto === 'NEUTRO' || (s.confianca_previsao ?? 0) < threshold) return '#8b949e55';
+    return s.acertou === null ? '#8b949e' : s.acertou ? '#58a6ff' : '#e36209';
+  });
 
   // Plugin que desenha os pontos de performance abaixo do eixo X
   const perfPlugin = {
@@ -633,13 +666,17 @@ function renderBacktest(data) {
     }
   };
 
-  // Stats header
-  const acc      = data.acuracia_pct;
+  // Stats header — recomputa com o limiar de convicção aplicado
+  const operated = sessions.filter(s => s.sinal_previsto !== 'NEUTRO' && (s.confianca_previsao ?? 0) >= threshold && s.acertou !== null);
+  const acertos  = operated.filter(s => s.acertou).length;
+  const erros    = operated.filter(s => !s.acertou).length;
+  const acc      = operated.length ? Math.round(acertos / operated.length * 100) : 0;
   const accColor = acc >= 65 ? '#3fb950' : acc >= 45 ? '#e3b341' : '#f85149';
+  const filtrados = sessions.length - operated.length;
   document.getElementById('bt-accuracy').innerHTML =
-    `<span style="color:${accColor};">Acurácia: ${acc}%</span>`;
-  document.getElementById('bt-hits').textContent   = `✓ ${data.acertos} acertos`;
-  document.getElementById('bt-misses').textContent = `✗ ${data.erros} erros`;
+    `<span style="color:${accColor};">Acurácia: ${acc}%</span>${filtrados > 0 ? `<span style="color:var(--muted);font-size:10px;margin-left:6px;">(${filtrados} filtrado${filtrados>1?'s':''})</span>` : ''}`;
+  document.getElementById('bt-hits').textContent   = `✓ ${acertos} acertos`;
+  document.getElementById('bt-misses').textContent = `✗ ${erros} erros`;
 
   const ctx = document.getElementById('backtestChart').getContext('2d');
   if (backtestChart) backtestChart.destroy();

@@ -19,7 +19,7 @@ INDICATORS = {
 }
 
 def fetch_intraday_usdbrl():
-    hist = yf.Ticker('USDBRL=X').history(period='30d', interval='30m')
+    hist = yf.Ticker('USDBRL=X').history(period='45d', interval='30m')
     if hist.empty:
         return None
     hist.index = hist.index.tz_convert('America/Sao_Paulo')
@@ -27,7 +27,7 @@ def fetch_intraday_usdbrl():
 
 def fetch_daily(symbol):
     try:
-        df = yf.Ticker(symbol).history(period='45d', interval='1d')
+        df = yf.Ticker(symbol).history(period='60d', interval='1d')
         df.index = df.index.tz_localize(None)
         return df
     except Exception:
@@ -73,7 +73,7 @@ def run_backtest():
 
     # Pregões: dias com barra às 09:00 BRT
     opening = intraday[(intraday.index.hour == 9) & (intraday.index.minute == 0)]
-    trading_days = sorted(set(opening.index.date))[-10:]
+    trading_days = sorted(set(opening.index.date))[-15:]
     log(f"Analisando {len(trading_days)} pregões...")
 
     sessions = []
