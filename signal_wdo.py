@@ -102,10 +102,10 @@ def build_prompt(market_data, history, contract):
   "fatores_favor": ["fator 1", "fator 2"],
   "fatores_contra": ["fator 1", "fator 2"],
   "zonas_sugeridas": {
-    "resistencia2": número,
-    "resistencia1": número,
-    "suporte1": número,
-    "suporte2": número
+    "resistencia2": número em PONTOS WDO (ex: 5120, não 5.12),
+    "resistencia1": número em PONTOS WDO (ex: 5090, não 5.09),
+    "suporte1": número em PONTOS WDO (ex: 5040, não 5.04),
+    "suporte2": número em PONTOS WDO (ex: 5000, não 5.00)
   },
   "validade": "abertura" | "manha" | "dia_todo",
   "alerta": "aviso se dados conflitantes ou incerteza alta, senão null"
