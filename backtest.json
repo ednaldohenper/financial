@@ -1,31 +1,10 @@
 {
-  "gerado_em": "2026-06-09T11:36:27.886502-03:00",
+  "gerado_em": "2026-06-10T12:20:55.022049-03:00",
   "pregoes_analisados": 15,
-  "acuracia_pct": 33,
+  "acuracia_pct": 31,
   "acertos": 4,
-  "erros": 8,
+  "erros": 9,
   "sessions": [
-    {
-      "data": "2026-05-20",
-      "data_fmt": "20/05",
-      "hora_entrada": "09:00",
-      "hora_saida": "09:30",
-      "abertura_pts": 5041.0,
-      "fechamento_pts": 5033.5,
-      "variacao_pts": -7.5,
-      "variacao_pct": -0.149,
-      "resultado": "BAIXA",
-      "sinal_previsto": "NEUTRO",
-      "confianca_previsao": 10,
-      "acertou": null,
-      "fonte_sinal": "mecanico",
-      "indicadores": {
-        "DXY": 0.3334362200509533,
-        "EURUSD": 0.3508207954415088,
-        "SP500": -0.6430326903006378,
-        "OURO": -1.014831308347064
-      }
-    },
     {
       "data": "2026-05-21",
       "data_fmt": "21/05",
@@ -315,6 +294,27 @@
         "EURUSD": -0.7754740696302664,
         "SP500": 0.20944530774946735,
         "OURO": -0.027672760265518015
+      }
+    },
+    {
+      "data": "2026-06-10",
+      "data_fmt": "10/06",
+      "hora_entrada": "09:00",
+      "hora_saida": "09:30",
+      "abertura_pts": 5189.5,
+      "fechamento_pts": 5187.0,
+      "variacao_pts": -2.5,
+      "variacao_pct": -0.048,
+      "resultado": "BAIXA",
+      "sinal_previsto": "ALTA",
+      "confianca_previsao": 72,
+      "acertou": false,
+      "fonte_sinal": "claude",
+      "indicadores": {
+        "DXY": -0.1399294206677948,
+        "EURUSD": 0.05072495404958577,
+        "SP500": -0.31351132686083805,
+        "OURO": -1.7504994131142815
       }
     }
   ]
