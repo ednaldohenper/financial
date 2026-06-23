@@ -117,5 +117,12 @@
     "confianca": 72,
     "contrato": "WDON26",
     "gerado_em": "2026-06-22T13:44:41.019782-03:00"
+  },
+  {
+    "data": "2026-06-23",
+    "bias": "ALTA",
+    "confianca": 72,
+    "contrato": "WDON26",
+    "gerado_em": "2026-06-23T11:36:24.395967-03:00"
   }
 ]
