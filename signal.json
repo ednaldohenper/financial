@@ -1,69 +1,67 @@
 {
   "bias": "ALTA",
   "confianca": 72,
-  "resumo": "Cenário de risk-off global com queda em bolsas (Nikkei -4.15%, DAX -1.38%, Nasdaq Fut -0.71%) e forte apreciação do dólar (DXY estável, USD/BRL +0.19% em tendência de alta nos últimos 20 dias). O ouro sobe 1.39%, confirmando fuga para segurança, o que historicamente impulsiona o WDO para cima.",
-  "fator_principal": "Risk-off global + Dólar forte em ambiente de aversão ao risco + USD/BRL em tendência de alta estrutural (5.0517 → 5.2075 em 20 dias)",
+  "resumo": "Dólar com pressão menor (DXY -0.21%), mas USD/BRL em recuperação técnica após teste de 5.18. Futuros de renda variável nos EUA sobem (+0.78% S&P, +1.15% Nasdaq), sinalizando apetite por risco e desvalorização relativa do real. Petróleo subindo (+1.68%) adiciona suporte ao dólar apesar da tendência de força de renda variável.",
+  "fator_principal": "Conflito técnico entre DXY fraco e S&P forte; resolução esperada na abertura (09:10–10:30) determinará bias do dia",
   "fatores_favor": [
-    "DXY estável (não caiu) em contexto de bolsas em queda = flight to safety",
-    "Ouro +1.39% = apetite de risco reduzido = dólar e WDO sobem",
-    "USD/BRL +0.19% hoje e em trend de alta firme (série 20d com média móvel ~5.15)",
-    "S&P e Nasdaq em queda = correlação S&P caindo + DXY estável = WDO sobe",
-    "Petróleo -3.66% = BRL enfraquece = WDO sobe"
+    "USD/BRL em recuperação (5.1831 vs mínima de 5.0207 dos últimos 20d)",
+    "Petróleo WTI +1.68% favorece fortalecimento do dólar contra BRL",
+    "Nikkei caindo -4.15% reduz apetite global por risco, histórico suporte a dólar"
   ],
   "fatores_contra": [
-    "EUR/USD +0.61% (contrário ao esperado) = pressão potencial de venda no WDO",
-    "DXY apenas -0.34%, não aceleração positiva = força do dólar ainda contida",
-    "Volume pré-mercado baixo = confirmação de setup incerta até abertura da B3"
+    "DXY enfraquecendo (-0.21%), correlação 0.85 com WDO é negativa hoje",
+    "EUR/USD subindo (+0.55%) pressiona WDO para baixo (correlação inversa)",
+    "S&P Futures forte (+0.78%) reduz demanda por ativos de risco como dólar"
   ],
   "zonas_sugeridas": {
-    "resistencia2": 5245,
-    "resistencia1": 5215,
+    "resistencia2": 5210,
+    "resistencia1": 5185,
     "suporte1": 5155,
-    "suporte2": 5125
+    "suporte2": 5120
   },
   "plano": {
-    "entrada_condicao": "Rompimento e fechamento acima de 5215 (R1) nos primeiros 30 min após abertura (09:10–09:40), com confirmação de continuação de Alta e volume crescente. Alternativa: pull-back até 5185–5195 + retomada da Alta",
-    "entrada_nivel": 5215,
+    "entrada_condicao": "Rompimento acima de 5185 com confirmação de volume na janela 09:10–10:30, mantendo DXY > 101.10 ou petróleo acima de 70.50; OU toque em suporte 5155 com recuperação técnica em alta volatilidade",
+    "entrada_nivel": 5185,
     "entrada_janela": "09:10–10:30 BRT",
     "stop_pts": 20,
     "alvo1_pts": 30,
     "alvo2_pts": 50,
-    "cancelar_se": "EUR/USD continuar subindo forte + WDO não romper 5215 até 10:30 BRT, ou DXY cair abaixo de 100.85"
+    "cancelar_se": "EUR/USD ultrapassar 1.1500 de forma agressiva, invalidando correlação; ou S&P Futures caírem >1.5% subitamente (risk-off severo)"
   },
   "validade": "manha",
-  "alerta": "Confiança moderada (72%). EUR/USD subindo contraria o esperado; aguardar confirmação de volume e movimento real do WDO após abertura antes de escalação. Não operar na janela 11:00–13:30 (baixo volume).",
+  "alerta": "Conflito técnico entre índices e moeda detectado: S&P forte vs DXY fraco. Aguardar abertura NY (14:30) pode oferecer confirmação mais clara. Volatilidade esperada moderada a alta. Nikkei fraco (-4.15%) é fator de alerta para posições compradas em BRL.",
   "contrato": "WDON26",
-  "gerado_em": "2026-06-26T11:11:47.007389-03:00",
+  "gerado_em": "2026-06-29T12:36:28.873487-03:00",
   "market_data": {
     "DXY": {
       "label": "DXY — Índice do Dólar",
-      "price": 101.085,
-      "change_pct": -0.34
+      "price": 101.146,
+      "change_pct": -0.21
     },
     "EURUSD": {
       "label": "EUR/USD",
-      "price": 1.1423,
-      "change_pct": 0.61
+      "price": 1.1425,
+      "change_pct": 0.55
     },
     "SP500F": {
       "label": "S&P 500 Futures",
-      "price": 7409.75,
-      "change_pct": -0.18
+      "price": 7459.75,
+      "change_pct": 0.78
     },
     "NASDAQF": {
       "label": "Nasdaq Futures",
-      "price": 29514.75,
-      "change_pct": -0.71
+      "price": 29705.75,
+      "change_pct": 1.15
     },
     "OURO": {
       "label": "Ouro (XAU/USD)",
-      "price": 4086.6001,
-      "change_pct": 1.39
+      "price": 4034.3,
+      "change_pct": -1.09
     },
     "PETROLEO": {
       "label": "Petróleo WTI",
-      "price": 69.29,
-      "change_pct": -3.66
+      "price": 70.39,
+      "change_pct": 1.68
     },
     "NIKKEI": {
       "label": "Nikkei 225",
@@ -72,14 +70,14 @@
     },
     "DAX": {
       "label": "DAX — Alemanha",
-      "price": 24649.5293,
-      "change_pct": -1.38
+      "price": 24626.6406,
+      "change_pct": -0.18
     },
     "USDBRL": {
       "label": "USD/BRL spot",
-      "price": 5.2075,
-      "change_pct": 0.19
+      "price": 5.1831,
+      "change_pct": -0.21
     }
   },
-  "tokens_usados": 2099
+  "tokens_usados": 2062
 }
